@@ -19,7 +19,8 @@ const swaggerOptions = {
       description: 'Filo yönetimi MVP backend servisleri',
     },
     servers: [
-      { url: 'http://localhost:' + PORT }
+      { url: 'http://localhost:' + PORT },
+      { url: 'https://arackira-backend.fly.dev' }
     ],
     components: {
       securitySchemes: {

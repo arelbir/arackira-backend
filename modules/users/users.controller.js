@@ -53,9 +53,9 @@ exports.loginUser = async (req, res) => {
     // Cookie olarak gönder (httpOnly, secure, sameSite)
     res.cookie('token', token, {
       httpOnly: true,
-      // Her zaman localde secure:false kullan! Yoksa cookie HTTP'de yazılmaz.
-      secure: false,
-      sameSite: 'lax',
+      // Production'da cross-site için secure:true ve sameSite:'None' gereklidir. Localde secure:false bırakılır.
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
       path: '/',
       maxAge: 8 * 60 * 60 * 1000 // 8 saat
     });

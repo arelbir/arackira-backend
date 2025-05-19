@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 const swaggerJsdoc = require('swagger-jsdoc');
 
 const app = express();
-const port = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4000;
 
 // Swagger/OpenAPI ayarları
 const swaggerOptions = {
@@ -19,7 +19,7 @@ const swaggerOptions = {
       description: 'Filo yönetimi MVP backend servisleri',
     },
     servers: [
-      { url: 'http://localhost:' + port }
+      { url: 'http://localhost:' + PORT }
     ],
     components: {
       securitySchemes: {
@@ -41,13 +41,12 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // CORS ayarı
 // TO DO: production için origin ayarı yapılacak
 app.use(cookieParser());
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+  : [];
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:53267',
-    'http://localhost:53267'
-  ],
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json());
@@ -135,6 +134,10 @@ app.get('/api/db-status', async (req, res) => {
   }
 });
 
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server listening on http://0.0.0.0:${PORT}`);
+});
+
 module.exports = app;
 
 /**
@@ -199,10 +202,6 @@ app.get('/api/vehicles', async (req, res) => {
   }
 });
 
-if (require.main === module) {
-  app.listen(port, '127.0.0.1', () => {
-    console.log(`Server running at http://127.0.0.1:${port}`);
-  });
-}
+
 
 module.exports = app;

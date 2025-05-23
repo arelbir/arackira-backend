@@ -52,31 +52,54 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// API route'larını ekle
-// Yeni modüler router yapısı
+// ------------------------- TANIM (DEFINITION) MODÜLLERİ -------------------------
+const brandsRouter = require('./modules/definitions/brands.routes');
+const clientTypesRouter = require('./modules/definitions/clientTypes.routes');
+const modelsRouter = require('./modules/definitions/models.routes');
+const supplierCategoriesRouter = require('./modules/definitions/supplierCategories.routes');
+const vehicleTypesRouter = require('./modules/definitions/vehicleTypes.routes');
+const transmissionsRouter = require('./modules/definitions/transmissions.routes');
+const colorsRouter = require('./modules/definitions/colors.routes');
+
+// ------------------------- OPERASYON MODÜLLERİ -------------------------
 const vehiclesRouter = require('./modules/vehicles/vehicles.routes');
+const clientsRouter = require('./modules/clients/clients.routes');
+const contractsRouter = require('./modules/contracts/contracts.routes');
+const rentalsRouter = require('./modules/rentals/rentals.routes');
+const maintenanceRouter = require('./modules/maintenance/maintenance.routes');
+const disposalRouter = require('./modules/disposal/disposal.routes');
+const reportsRouter = require('./modules/reports/reports.routes');
+
+// ------------------------- KULLANICI MODÜLÜ -------------------------
+const usersRouter = require('./modules/users/users.routes');
+
+// ------------------------- CORE -------------------------
 const errorHandler = require('./core/errorHandler');
 const logger = require('./core/logger');
 
 logger.logInfo('Uygulama başlatılıyor...');
 
-// Modül routerlarını ekle
+// ------------------------- ROUTER KULLANIMLARI -------------------------
+// Tanım modülleri
+app.use('/api/brands', brandsRouter);
+app.use('/api/client-types', clientTypesRouter);
+app.use('/api/models', modelsRouter);
+app.use('/api/supplier-categories', supplierCategoriesRouter);
+app.use('/api/vehicle-types', vehicleTypesRouter);
+app.use('/api/transmissions', transmissionsRouter);
+app.use('/api/colors', colorsRouter);
+
+// Operasyon modülleri
 app.use('/api/vehicles', vehiclesRouter);
-const clientsRouter = require('./modules/clients/clients.routes');
 app.use('/api/clients', clientsRouter);
-const contractsRouter = require('./modules/contracts/contracts.routes');
 app.use('/api/contracts', contractsRouter);
-const rentalsRouter = require('./modules/rentals/rentals.routes');
 app.use('/api/rentals', rentalsRouter);
-const maintenanceRouter = require('./modules/maintenance/maintenance.routes');
 app.use('/api/maintenance', maintenanceRouter);
-const disposalRouter = require('./modules/disposal/disposal.routes');
 app.use('/api/disposal', disposalRouter);
-const reportsRouter = require('./modules/reports/reports.routes');
 app.use('/api/reports', reportsRouter);
-const usersRouter = require('./modules/users/users.routes');
+
+// Kullanıcı modülü
 app.use('/api/users', usersRouter);
-// Diğer modüller için benzer şekilde eklenebilir
 
 // Merkezi hata yönetimi (tüm route'ların en sonunda)
 app.use(errorHandler);

@@ -1,5 +1,7 @@
 // modules/vehicles/vehicles.controller.js
 const vehicleModel = require('./vehicles.model');
+const { logInfo, logWarn, logError } = require('../../core/logger');
+const errorHandler = require('../../core/errorHandler');
 
 // Araç listele
 async function getAllVehicles(req, res, next) {

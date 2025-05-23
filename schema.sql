@@ -69,18 +69,33 @@ END $$;
 CREATE TABLE IF NOT EXISTS vehicles (
     id SERIAL PRIMARY KEY,
     plate_number VARCHAR(50) UNIQUE NOT NULL,
-    brand VARCHAR(100),
-    model VARCHAR(100),
+    branch_id INTEGER,
+    vehicle_type_id INTEGER REFERENCES vehicle_types(id),
+    brand_id INTEGER REFERENCES brands(id),
+    model_id INTEGER REFERENCES models(id),
+    version VARCHAR(50),
+    package VARCHAR(50),
+    vehicle_group_id INTEGER,
+    body_type VARCHAR(50),
+    fuel_type_id INTEGER,
+    transmission VARCHAR(50),
+    model_year INTEGER,
+    color VARCHAR(30),
+    engine_power_hp INTEGER,
+    engine_volume_cc INTEGER,
     chassis_number VARCHAR(100) UNIQUE,
-    year INTEGER,
-    purchase_contract_id INTEGER REFERENCES purchase_contracts(id) ON DELETE SET NULL,
-    acquisition_cost DECIMAL(12, 2),
-    acquisition_date DATE,
-    current_status vehicle_status_enum DEFAULT 'available',
-    current_client_company_id INTEGER REFERENCES client_companies(id) ON DELETE SET NULL,
-    notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    engine_number VARCHAR(50),
+    first_registration_date DATE,
+    registration_document_number VARCHAR(50),
+    vehicle_responsible_id INTEGER,
+    vehicle_km INTEGER,
+    next_maintenance_date DATE,
+    inspection_expiry_date DATE,
+    insurance_expiry_date DATE,
+    casco_expiry_date DATE,
+    exhaust_stamp_expiry_date DATE
 );
+
 
 CREATE TABLE IF NOT EXISTS lease_agreements (
     id SERIAL PRIMARY KEY,
@@ -188,3 +203,49 @@ ON CONFLICT DO NOTHING;
 DROP TABLE IF EXISTS asset_details CASCADE;
 DROP TABLE IF EXISTS vehicle_assignments CASCADE;
 DROP TABLE IF EXISTS vehicle_locations CASCADE;
+
+-- Sprint 2 Sistem Tanımları (Definitions)
+
+CREATE TABLE IF NOT EXISTS vehicle_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS fuel_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS brands (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS models (
+    id SERIAL PRIMARY KEY,
+    brand_id INTEGER REFERENCES brands(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (brand_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS supplier_categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS client_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

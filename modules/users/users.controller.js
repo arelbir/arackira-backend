@@ -60,7 +60,10 @@ exports.loginUser = async (req, res) => {
       maxAge: 8 * 60 * 60 * 1000 // 8 saat
     });
     console.log('[loginUser] Set-Cookie header sent for token');
-    res.status(200).json({ user: { id: user.id, username: user.username, role: user.role } });
+    res.status(200).json({
+      token, // JWT'yi body'de de dön
+      user: { id: user.id, username: user.username, role: user.role }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -56,6 +56,9 @@ app.use(express.json());
 // Yeni modüler router yapısı
 const vehiclesRouter = require('./modules/vehicles/vehicles.routes');
 const errorHandler = require('./core/errorHandler');
+const logger = require('./core/logger');
+
+logger.logInfo('Uygulama başlatılıyor...');
 
 // Modül routerlarını ekle
 app.use('/api/vehicles', vehiclesRouter);
@@ -75,7 +78,7 @@ const usersRouter = require('./modules/users/users.routes');
 app.use('/api/users', usersRouter);
 // Diğer modüller için benzer şekilde eklenebilir
 
-// Merkezi hata yönetimi
+// Merkezi hata yönetimi (tüm route'ların en sonunda)
 app.use(errorHandler);
 
 // PostgreSQL bağlantısı

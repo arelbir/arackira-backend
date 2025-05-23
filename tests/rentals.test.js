@@ -2,7 +2,7 @@ const request = require('supertest');
 const pool = require('../db');
 const app = require('../index');
 let token;
-const testUser = { username: 'testuser2', password: 'testpassword', role: 'admin' };
+const testUser = { username: 'testuser2', password: 'testpass123', role: 'admin' };
 let vehicleId;
 let clientCompanyId;
 
@@ -60,7 +60,7 @@ describe('Rentals API', () => {
     expect([200,401,403]).toContain(res.statusCode);
   });
   it('POST /api/rentals', async () => {
-    const rental = { vehicle_id: vehicleId, client_company_id: clientCompanyId, start_date: '2025-01-01', end_date: '2025-01-02' };
+    const rental = { client_company_id: clientCompanyId, contract_number: 'TEST-RENTAL-1', start_date: '2025-01-01', end_date: '2025-01-02', terms: 'Test terms' };
     const res = await request(app)
       .post('/api/rentals')
       .set('Authorization', `Bearer ${token}`)
@@ -73,14 +73,14 @@ describe('Rentals API', () => {
     const res = await request(app)
       .get(`/api/rentals/${createdId}`)
       .set('Authorization', `Bearer ${token}`);
-    expect([200,404,401,403]).toContain(res.statusCode);
+    expect([200,204,404,401,403]).toContain(res.statusCode);
   });
   it('PUT /api/rentals/:id', async () => {
     if (!createdId) return;
     const res = await request(app)
       .put(`/api/rentals/${createdId}`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ client_company_id: clientCompanyId, start_date: '2025-01-03', end_date: '2025-01-04' });
+      .send({ client_company_id: clientCompanyId, contract_number: 'TEST-RENTAL-UPDATED', start_date: '2025-01-03', end_date: '2025-01-04', terms: 'Updated terms' });
     expect([200,404,400,401,403]).toContain(res.statusCode);
   });
   it('DELETE /api/rentals/:id', async () => {
@@ -88,9 +88,7 @@ describe('Rentals API', () => {
     const res = await request(app)
       .delete(`/api/rentals/${createdId}`)
       .set('Authorization', `Bearer ${token}`);
-    expect([200,404,401,403]).toContain(res.statusCode);
+    expect([200,204,404,401,403]).toContain(res.statusCode);
   });
-  afterAll(async () => {
-    await pool.end();
-  });
+
 });

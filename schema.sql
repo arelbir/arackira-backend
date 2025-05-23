@@ -15,20 +15,29 @@ VALUES ('Test Şirketi', 'Ali Veli', 'test@company.com', '5551234567', 'Test Adr
 ON CONFLICT DO NOTHING;
 
 -- Kullanıcılar
+CREATE TABLE IF NOT EXISTS roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(50) DEFAULT 'user',
+    role_id INTEGER REFERENCES roles(id) ON DELETE SET NULL,
     client_company_id INTEGER REFERENCES client_companies(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- Örnek admin ve normal kullanıcı
-INSERT INTO users (username, password, role, client_company_id)
+-- Örnek roller
+INSERT INTO roles (name) VALUES ('admin') ON CONFLICT DO NOTHING;
+INSERT INTO roles (name) VALUES ('user') ON CONFLICT DO NOTHING;
+
+-- Örnek admin ve normal kullanıcı (role_id ile)
+INSERT INTO users (username, password, role_id, client_company_id)
 VALUES 
-  ('admin', '$2b$10$adminhash', 'admin', NULL),
-  ('testuser', '$2b$10$userhash', 'user', 1)
+  ('admin', '$2b$10$adminhash', (SELECT id FROM roles WHERE name='admin'), NULL),
+  ('testuser', '$2b$10$userhash', (SELECT id FROM roles WHERE name='user'), 1)
 ON CONFLICT DO NOTHING;
 
 

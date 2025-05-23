@@ -1,12 +1,11 @@
 // modules/maintenance/maintenance.controller.js
-const MaintenanceRecord = require('./maintenance.model');
-const pool = require('../../db');
+const maintenanceModel = require('./maintenance.model');
 
 // Bakım kayıtlarını listele
 async function getAllMaintenance(req, res, next) {
   try {
-    const result = await pool.query('SELECT * FROM maintenance_records');
-    res.json(result.rows);
+    const maintenance = await maintenanceModel.getAllMaintenance();
+    res.json(maintenance);
   } catch (err) {
     next(err);
   }
@@ -15,15 +14,11 @@ async function getAllMaintenance(req, res, next) {
 // Yeni bakım kaydı ekle
 async function createMaintenance(req, res, next) {
   try {
-    const { vehicle_id, description, date, cost, notes } = req.body;
-    if (!vehicle_id || !description || !date) {
+    if (!req.body.vehicle_id || !req.body.description || !req.body.date) {
       return res.status(400).json({ error: 'Araç, açıklama ve tarih zorunlu' });
     }
-    const result = await pool.query(
-      'INSERT INTO maintenance_records (vehicle_id, description, date, cost, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [vehicle_id, description, date, cost, notes]
-    );
-    res.status(201).json(result.rows[0]);
+    const maintenance = await maintenanceModel.createMaintenance(req.body);
+    res.status(201).json(maintenance);
   } catch (err) {
     next(err);
   }
@@ -33,11 +28,11 @@ async function createMaintenance(req, res, next) {
 async function getMaintenanceById(req, res, next) {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT * FROM maintenance_records WHERE id = $1', [id]);
-    if (result.rows.length === 0) {
+    const maintenance = await maintenanceModel.getMaintenanceById(id);
+    if (!maintenance) {
       return res.status(404).json({ error: 'Bakım kaydı bulunamadı' });
     }
-    res.json(result.rows[0]);
+    res.json(maintenance);
   } catch (err) {
     next(err);
   }
@@ -47,15 +42,11 @@ async function getMaintenanceById(req, res, next) {
 async function updateMaintenance(req, res, next) {
   try {
     const { id } = req.params;
-    const { vehicle_id, description, date, cost, notes } = req.body;
-    const result = await pool.query(
-      'UPDATE maintenance_records SET vehicle_id = $1, description = $2, date = $3, cost = $4, notes = $5 WHERE id = $6 RETURNING *',
-      [vehicle_id, description, date, cost, notes, id]
-    );
-    if (result.rows.length === 0) {
+    const updated = await maintenanceModel.updateMaintenance(id, req.body);
+    if (!updated) {
       return res.status(404).json({ error: 'Bakım kaydı bulunamadı' });
     }
-    res.json(result.rows[0]);
+    res.json(updated);
   } catch (err) {
     next(err);
   }
@@ -65,11 +56,11 @@ async function updateMaintenance(req, res, next) {
 async function deleteMaintenance(req, res, next) {
   try {
     const { id } = req.params;
-    const result = await pool.query('DELETE FROM maintenance_records WHERE id = $1 RETURNING *', [id]);
-    if (result.rows.length === 0) {
+    const deleted = await maintenanceModel.deleteMaintenance(id);
+    if (!deleted) {
       return res.status(404).json({ error: 'Bakım kaydı bulunamadı' });
     }
-    res.json({ message: 'Bakım kaydı silindi', deleted: result.rows[0] });
+    res.status(204).end();
   } catch (err) {
     next(err);
   }

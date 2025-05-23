@@ -203,4 +203,70 @@ router.post('/login', loginUser);
  */
 router.get('/', authenticateToken ? authenticateToken : (req,res,next)=>next(), authorizeRole ? authorizeRole('admin') : (req,res,next)=>next(), listUsers);
 
+/**
+ * @openapi
+ * /api/users/{id}:
+ *   put:
+ *     summary: Kullanıcıyı güncelle (admin)
+ *     description: Kullanıcı adı ve rolünü günceller. Sadece admin erişimi gerektirir.
+ *     tags:
+ *       - Users
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - role
+ *           example:
+ *             username: "newusername"
+ *             role: "user"
+ *     responses:
+ *       200:
+ *         description: Kullanıcı güncellendi
+ *       400:
+ *         description: Eksik veri
+ *       403:
+ *         description: Yetersiz yetki
+ *       404:
+ *         description: Kullanıcı bulunamadı
+ */
+router.put('/:id', authenticateToken, authorizeRole('admin'), require('./users.controller').updateUser);
+
+/**
+ * @openapi
+ * /api/users/{id}:
+ *   delete:
+ *     summary: Kullanıcıyı sil (admin)
+ *     description: Kullanıcıyı siler. Sadece admin erişimi gerektirir.
+ *     tags:
+ *       - Users
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       204:
+ *         description: Kullanıcı silindi
+ *       403:
+ *         description: Yetersiz yetki
+ *       404:
+ *         description: Kullanıcı bulunamadı
+ */
+router.delete('/:id', authenticateToken, authorizeRole('admin'), require('./users.controller').deleteUser);
+
 module.exports = router;

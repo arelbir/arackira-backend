@@ -1,12 +1,11 @@
 // modules/clients/clients.controller.js
-const ClientCompany = require('./clients.model');
-const pool = require('../../db');
+const clientModel = require('./clients.model');
 
 // Müşteri firmaları listele
 async function getAllClients(req, res, next) {
   try {
-    const result = await pool.query('SELECT * FROM client_companies');
-    res.json(result.rows);
+    const clients = await clientModel.getAllClients();
+    res.json(clients);
   } catch (err) {
     next(err);
   }
@@ -15,12 +14,8 @@ async function getAllClients(req, res, next) {
 // Yeni müşteri firması ekle
 async function createClient(req, res, next) {
   try {
-    const { company_name, contact_person, email, phone, address } = req.body;
-    const result = await pool.query(
-      'INSERT INTO client_companies (company_name, contact_person, email, phone, address) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [company_name, contact_person, email, phone, address]
-    );
-    res.status(201).json(result.rows[0]);
+    const client = await clientModel.createClient(req.body);
+    res.status(201).json(client);
   } catch (err) {
     next(err);
   }
@@ -30,11 +25,11 @@ async function createClient(req, res, next) {
 async function getClientById(req, res, next) {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT * FROM client_companies WHERE id = $1', [id]);
-    if (result.rows.length === 0) {
+    const client = await clientModel.getClientById(id);
+    if (!client) {
       return res.status(404).json({ error: 'Müşteri firması bulunamadı' });
     }
-    res.json(result.rows[0]);
+    res.json(client);
   } catch (err) {
     next(err);
   }
@@ -44,15 +39,11 @@ async function getClientById(req, res, next) {
 async function updateClient(req, res, next) {
   try {
     const { id } = req.params;
-    const { company_name, contact_person, email, phone, address } = req.body;
-    const result = await pool.query(
-      'UPDATE client_companies SET company_name = $1, contact_person = $2, email = $3, phone = $4, address = $5 WHERE id = $6 RETURNING *',
-      [company_name, contact_person, email, phone, address, id]
-    );
-    if (result.rows.length === 0) {
+    const updated = await clientModel.updateClient(id, req.body);
+    if (!updated) {
       return res.status(404).json({ error: 'Müşteri firması bulunamadı' });
     }
-    res.json(result.rows[0]);
+    res.json(updated);
   } catch (err) {
     next(err);
   }
@@ -62,11 +53,11 @@ async function updateClient(req, res, next) {
 async function deleteClient(req, res, next) {
   try {
     const { id } = req.params;
-    const result = await pool.query('DELETE FROM client_companies WHERE id = $1 RETURNING *', [id]);
-    if (result.rows.length === 0) {
+    const deleted = await clientModel.deleteClient(id);
+    if (!deleted) {
       return res.status(404).json({ error: 'Müşteri firması bulunamadı' });
     }
-    res.json({ message: 'Müşteri firması silindi', deleted: result.rows[0] });
+    res.status(204).end();
   } catch (err) {
     next(err);
   }

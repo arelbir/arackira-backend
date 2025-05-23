@@ -1,5 +1,5 @@
 // modules/reports/reports.controller.js
-const pool = require('../../db');
+const reportModel = require('./reports.model');
 
 // Örnek: Tüm araçların listesini raporla
 async function getVehicleListReport(req, res, next) {
@@ -54,8 +54,8 @@ async function getVehiclesInMaintenanceReport(req, res, next) {
 // Tüm raporları listele
 async function getAllReports(req, res, next) {
   try {
-    const result = await pool.query('SELECT * FROM reports');
-    res.json(result.rows);
+    const reports = await reportModel.getAllReports();
+    res.json(reports);
   } catch (err) {
     next(err);
   }
@@ -64,15 +64,11 @@ async function getAllReports(req, res, next) {
 // Yeni rapor oluştur
 async function createReport(req, res, next) {
   try {
-    const { name, data } = req.body;
-    if (!name || !data) {
-      return res.status(400).json({ error: 'Rapor adı ve veri zorunlu' });
+    if (!req.body.name) {
+      return res.status(400).json({ error: 'Rapor adı zorunlu' });
     }
-    const result = await pool.query(
-      'INSERT INTO reports (name, data) VALUES ($1, $2) RETURNING *',
-      [name, data]
-    );
-    res.status(201).json(result.rows[0]);
+    const report = await reportModel.createReport(req.body);
+    res.status(201).json(report);
   } catch (err) {
     next(err);
   }
@@ -82,11 +78,11 @@ async function createReport(req, res, next) {
 async function getReportById(req, res, next) {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT * FROM reports WHERE id = $1', [id]);
-    if (result.rows.length === 0) {
+    const report = await reportModel.getReportById(id);
+    if (!report) {
       return res.status(404).json({ error: 'Rapor bulunamadı' });
     }
-    res.json(result.rows[0]);
+    res.json(report);
   } catch (err) {
     next(err);
   }
@@ -96,15 +92,11 @@ async function getReportById(req, res, next) {
 async function updateReport(req, res, next) {
   try {
     const { id } = req.params;
-    const { name, data } = req.body;
-    const result = await pool.query(
-      'UPDATE reports SET name = $1, data = $2 WHERE id = $3 RETURNING *',
-      [name, data, id]
-    );
-    if (result.rows.length === 0) {
+    const updated = await reportModel.updateReport(id, req.body);
+    if (!updated) {
       return res.status(404).json({ error: 'Rapor bulunamadı' });
     }
-    res.json(result.rows[0]);
+    res.json(updated);
   } catch (err) {
     next(err);
   }
@@ -114,11 +106,11 @@ async function updateReport(req, res, next) {
 async function deleteReport(req, res, next) {
   try {
     const { id } = req.params;
-    const result = await pool.query('DELETE FROM reports WHERE id = $1 RETURNING *', [id]);
-    if (result.rows.length === 0) {
+    const deleted = await reportModel.deleteReport(id);
+    if (!deleted) {
       return res.status(404).json({ error: 'Rapor bulunamadı' });
     }
-    res.json({ message: 'Rapor silindi', deleted: result.rows[0] });
+    res.status(204).end();
   } catch (err) {
     next(err);
   }

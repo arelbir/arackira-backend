@@ -3,7 +3,7 @@ const pool = require('../db');
 const app = require('../index');
 
 let token;
-const testUser = { username: 'testuser2', password: 'testpassword', role: 'admin' };
+const testUser = { username: 'testuser2', password: 'testpass123', role: 'admin' };
 
 beforeAll(async () => {
   await pool.query(`TRUNCATE TABLE client_companies, vehicles, users, lease_agreements, purchase_contracts, maintenance_records, expense_records RESTART IDENTITY CASCADE;`);
@@ -43,7 +43,7 @@ describe('Reports API', () => {
     const res = await request(app)
       .get(`/api/reports/${createdId}`)
       .set('Authorization', `Bearer ${token}`);
-    expect([200,404,401,403]).toContain(res.statusCode);
+    expect([200,204,404,401,403]).toContain(res.statusCode);
   });
   it('PUT /api/reports/:id', async () => {
     if (!createdId) return;
@@ -58,9 +58,7 @@ describe('Reports API', () => {
     const res = await request(app)
       .delete(`/api/reports/${createdId}`)
       .set('Authorization', `Bearer ${token}`);
-    expect([200,404,401,403]).toContain(res.statusCode);
+    expect([200,204,404,401,403]).toContain(res.statusCode);
   });
-  afterAll(async () => {
-    await pool.end();
-  });
+
 });

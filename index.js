@@ -61,6 +61,8 @@ const vehicleTypesRouter = require('./modules/definitions/vehicleTypes.routes');
 const transmissionsRouter = require('./modules/definitions/transmissions.routes');
 // Araç Lastiği Modülü
 const vehicleTiresRouter = require('./modules/vehicleTires/vehicleTires.routes');
+// Araç Servis/Bakım Modülü
+const vehicleServicesRouter = require('./modules/vehicleServices/vehicleServices.routes');
 
 const colorsRouter = require('./modules/definitions/colors.routes');
 const fuelTypesRouter = require('./modules/definitions/fuelTypes.routes');
@@ -105,12 +107,19 @@ app.use('/api/tire-positions', require('./modules/definitions/tirePositions.rout
 app.use('/api/tire-types', require('./modules/definitions/tireTypes.routes'));
 app.use('/api/tire-models', require('./modules/definitions/tireModels.routes'));
 app.use('/api/tyre-suppliers', require('./modules/definitions/tyreSuppliers.routes'));
+app.use('/api/currencies', require('./modules/definitions/currencies.routes'));
+app.use('/api/service-types', require('./modules/definitions/serviceTypes.routes'));
+app.use('/api/service-companies', require('./modules/definitions/serviceCompanies.routes'));
+app.use('/api/payer-types', require('./modules/definitions/payerTypes.routes'));
+app.use('/api/vehicle-penalties', require('./modules/vehiclePenalties/vehiclePenalties.routes'));
+app.use('/api/vehicle-hgs-loadings', require('./modules/vehicleHgsLoadings/vehicleHgsLoadings.routes'));
 
 app.use('/api/models', modelsRouter);
 app.use('/api/supplier-categories', supplierCategoriesRouter);
 app.use('/api/vehicle-types', vehicleTypesRouter);
 app.use('/api/transmissions', transmissionsRouter);
-app.use('/api/colors', colorsRouter);
+app.use('/api/vehicle-tires', vehicleTiresRouter);
+app.use('/api/vehicle-services', vehicleServicesRouter);
 app.use('/api/fuel-types', fuelTypesRouter);
 app.use('/api/insurance-types', insuranceTypesRouter);
 app.use('/api/insurance-companies', insuranceCompaniesRouter);

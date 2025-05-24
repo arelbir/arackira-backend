@@ -34,7 +34,7 @@ const swaggerOptions = {
     },
     security: [{ BearerAuth: [] }],
   },
-  apis: ['./index.js', './modules/**/*.routes.js'], // JSDoc comment'leri hem index.js hem modül route dosyalarından okunacak
+  apis: ['./index.js', './modules/**/*.routes.js', './modules/definitions/*.routes.js'], // JSDoc comment'leri hem index.js hem modül route dosyalarından hem de definitions modüllerinden okunacak
 };
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -59,7 +59,17 @@ const modelsRouter = require('./modules/definitions/models.routes');
 const supplierCategoriesRouter = require('./modules/definitions/supplierCategories.routes');
 const vehicleTypesRouter = require('./modules/definitions/vehicleTypes.routes');
 const transmissionsRouter = require('./modules/definitions/transmissions.routes');
+// Araç Lastiği Modülü
+const vehicleTiresRouter = require('./modules/vehicleTires/vehicleTires.routes');
+
 const colorsRouter = require('./modules/definitions/colors.routes');
+const fuelTypesRouter = require('./modules/definitions/fuelTypes.routes');
+const insuranceTypesRouter = require('./modules/definitions/insuranceTypes.routes');
+const insuranceCompaniesRouter = require('./modules/definitions/insuranceCompanies.routes');
+const agenciesRouter = require('./modules/definitions/agencies.routes');
+const paymentTypesRouter = require('./modules/definitions/paymentTypes.routes');
+const paymentAccountsRouter = require('./modules/definitions/paymentAccounts.routes');
+const inspectionCompaniesRouter = require('./modules/definitions/inspectionCompanies.routes');
 
 // ------------------------- OPERASYON MODÜLLERİ -------------------------
 const vehiclesRouter = require('./modules/vehicles/vehicles.routes');
@@ -69,8 +79,14 @@ const rentalsRouter = require('./modules/rentals/rentals.routes');
 const maintenanceRouter = require('./modules/maintenance/maintenance.routes');
 const disposalRouter = require('./modules/disposal/disposal.routes');
 const reportsRouter = require('./modules/reports/reports.routes');
+const insuranceRouter = require('./modules/insurance/insurance.routes');
+const vehicleInspectionRouter = require('./modules/vehicleInspection/vehicleInspection.routes');
+
 
 // ------------------------- KULLANICI MODÜLÜ -------------------------
+
+
+
 const usersRouter = require('./modules/users/users.routes');
 
 // ------------------------- CORE -------------------------
@@ -83,11 +99,25 @@ logger.logInfo('Uygulama başlatılıyor...');
 // Tanım modülleri
 app.use('/api/brands', brandsRouter);
 app.use('/api/client-types', clientTypesRouter);
+app.use('/api/tire-brands', require('./modules/definitions/tireBrands.routes'));
+app.use('/api/tire-conditions', require('./modules/definitions/tireConditions.routes'));
+app.use('/api/tire-positions', require('./modules/definitions/tirePositions.routes'));
+app.use('/api/tire-types', require('./modules/definitions/tireTypes.routes'));
+app.use('/api/tire-models', require('./modules/definitions/tireModels.routes'));
+app.use('/api/tyre-suppliers', require('./modules/definitions/tyreSuppliers.routes'));
+
 app.use('/api/models', modelsRouter);
 app.use('/api/supplier-categories', supplierCategoriesRouter);
 app.use('/api/vehicle-types', vehicleTypesRouter);
 app.use('/api/transmissions', transmissionsRouter);
 app.use('/api/colors', colorsRouter);
+app.use('/api/fuel-types', fuelTypesRouter);
+app.use('/api/insurance-types', insuranceTypesRouter);
+app.use('/api/insurance-companies', insuranceCompaniesRouter);
+app.use('/api/agencies', agenciesRouter);
+app.use('/api/payment-types', paymentTypesRouter);
+app.use('/api/payment-accounts', paymentAccountsRouter);
+app.use('/api/inspection-companies', inspectionCompaniesRouter);
 
 // Operasyon modülleri
 app.use('/api/vehicles', vehiclesRouter);
@@ -97,6 +127,14 @@ app.use('/api/rentals', rentalsRouter);
 app.use('/api/maintenance', maintenanceRouter);
 app.use('/api/disposal', disposalRouter);
 app.use('/api/reports', reportsRouter);
+app.use('/api/insurance', insuranceRouter);
+app.use('/api/users', usersRouter);
+
+// Araç Lastiği API
+app.use('/api/vehicle-tires', vehicleTiresRouter);
+
+// Araç Muayene Modülü
+app.use('/api/vehicle-inspections', vehicleInspectionRouter);
 
 // Kullanıcı modülü
 app.use('/api/users', usersRouter);

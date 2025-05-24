@@ -59,6 +59,8 @@ const modelsRouter = require('./modules/definitions/models.routes');
 const supplierCategoriesRouter = require('./modules/definitions/supplierCategories.routes');
 const vehicleTypesRouter = require('./modules/definitions/vehicleTypes.routes');
 const transmissionsRouter = require('./modules/definitions/transmissions.routes');
+const packagesRouter = require('./modules/definitions/packages.routes');
+const vehicleStatusesRouter = require('./modules/definitions/vehicleStatuses.routes');
 // Araç Lastiği Modülü
 const vehicleTiresRouter = require('./modules/vehicleTires/vehicleTires.routes');
 // Araç Servis/Bakım Modülü
@@ -97,8 +99,23 @@ const logger = require('./core/logger');
 
 logger.logInfo('Uygulama başlatılıyor...');
 
+// ------------------------- AUTH MIDDLEWARE -------------------------
+const { authenticateToken } = require('./core/auth');
+app.use('/api', (req, res, next) => {
+  if (
+    req.path === '/users/login' ||
+    req.path === '/users/register' ||
+    req.path === '/users/forgot-password' ||
+    req.path === '/users/reset-password'
+  ) {
+    return next();
+  }
+  return authenticateToken(req, res, next);
+});
+
 // ------------------------- ROUTER KULLANIMLARI -------------------------
 // Tanım modülleri
+app.use('/api/colors', colorsRouter);
 app.use('/api/brands', brandsRouter);
 app.use('/api/client-types', clientTypesRouter);
 app.use('/api/tire-brands', require('./modules/definitions/tireBrands.routes'));
@@ -113,10 +130,12 @@ app.use('/api/service-companies', require('./modules/definitions/serviceCompanie
 app.use('/api/payer-types', require('./modules/definitions/payerTypes.routes'));
 app.use('/api/vehicle-penalties', require('./modules/vehiclePenalties/vehiclePenalties.routes'));
 app.use('/api/vehicle-hgs-loadings', require('./modules/vehicleHgsLoadings/vehicleHgsLoadings.routes'));
+app.use('/api/vehicle-statuses', vehicleStatusesRouter);
 
 app.use('/api/models', modelsRouter);
 app.use('/api/supplier-categories', supplierCategoriesRouter);
 app.use('/api/vehicle-types', vehicleTypesRouter);
+app.use('/api/packages', packagesRouter);
 app.use('/api/transmissions', transmissionsRouter);
 app.use('/api/vehicle-tires', vehicleTiresRouter);
 app.use('/api/vehicle-services', vehicleServicesRouter);
@@ -127,6 +146,10 @@ app.use('/api/agencies', agenciesRouter);
 app.use('/api/payment-types', paymentTypesRouter);
 app.use('/api/payment-accounts', paymentAccountsRouter);
 app.use('/api/inspection-companies', inspectionCompaniesRouter);
+
+// Tanım modülleri
+const { branchesRoutes } = require('./modules/definitions');
+app.use('/api/branches', branchesRoutes);
 
 // Operasyon modülleri
 app.use('/api/vehicles', vehiclesRouter);

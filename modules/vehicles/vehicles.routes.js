@@ -57,6 +57,9 @@ const router = express.Router();
  *                 type: integer
  *               notes:
  *                 type: string
+ *               vehicle_status_id:
+ *                 type: integer
+ *                 description: Araç statü ID (vehicle_statuses tablosuna FK)
  *     responses:
  *       201:
  *         description: Araç oluşturuldu

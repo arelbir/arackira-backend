@@ -7,7 +7,8 @@ const {
   getVehicleModelById,
   createVehicleModel,
   updateVehicleModel,
-  deleteVehicleModel
+  deleteVehicleModel,
+  getVehicleModelsByBrand // yeni fonksiyon
 } = require('./models.model');
 
 async function handleGetAllVehicleModels(req, res, next) {
@@ -61,10 +62,22 @@ async function handleDeleteVehicleModel(req, res, next) {
   }
 }
 
+// Yeni fonksiyon: Belirli bir markanın modelleri
+async function handleGetModelsByBrand(req, res, next) {
+  try {
+    const { brandId } = req.params;
+    const models = await getVehicleModelsByBrand(brandId);
+    res.json(models);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   handleGetAllVehicleModels,
   handleGetVehicleModelById,
   handleCreateVehicleModel,
   handleUpdateVehicleModel,
-  handleDeleteVehicleModel
+  handleDeleteVehicleModel,
+  handleGetModelsByBrand // export
 };

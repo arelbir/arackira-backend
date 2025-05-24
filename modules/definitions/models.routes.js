@@ -5,9 +5,38 @@ const {
   handleGetVehicleModelById,
   handleCreateVehicleModel,
   handleUpdateVehicleModel,
-  handleDeleteVehicleModel
+  handleDeleteVehicleModel,
+  handleGetModelsByBrand // yeni eklenen fonksiyon
 } = require('./models.controller');
 const router = express.Router();
+
+/**
+ * @openapi
+ * /api/models/by-brand/{brandId}:
+ *   get:
+ *     summary: Seçili markanın tüm araç modellerini listeler
+ *     tags: [Models]
+ *     parameters:
+ *       - in: path
+ *         name: brandId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Marka ID
+ *     responses:
+ *       200:
+ *         description: Başarılı - Model listesi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Model'
+ *       404:
+ *         description: Marka bulunamadı veya model yok
+ */
+// Yeni route: Belirli bir markanın tüm modelleri
+router.get('/by-brand/:brandId', handleGetModelsByBrand);
 
 /**
  * @openapi

@@ -3,8 +3,152 @@ const express = require('express');
 const { getAllVehicles, createVehicle, getVehicleById, updateVehicle, deleteVehicle } = require('./vehicles.controller');
 const { vehicleValidationRules, validate } = require('../../core/validation');
 const { authenticateToken, authorizeRole } = require('../../core/auth');
+const errorHandler = require('../../core/errorHandler');
 
 const router = express.Router();
+
+/**
+ * @openapi
+ * /api/vehicles:
+ *   get:
+ *     summary: Araçları listeler
+ *     tags: [Vehicles]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Araçlar listelendi
+ *   post:
+ *     summary: Yeni araç oluştur
+ *     tags: [Vehicles]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               plate_number:
+ *                 type: string
+ *               brand_id:
+ *                 type: integer
+ *               model:
+ *                 type: string
+ *               vehicle_type_id:
+ *                 type: integer
+ *               fuel_type_id:
+ *                 type: integer
+ *               chassis_number:
+ *                 type: string
+ *               year:
+ *                 type: integer
+ *               purchase_contract_id:
+ *                 type: integer
+ *               acquisition_cost:
+ *                 type: number
+ *               acquisition_date:
+ *                 type: string
+ *                 format: date
+ *               current_status:
+ *                 type: string
+ *               current_client_company_id:
+ *                 type: integer
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Araç oluşturuldu
+ *
+ * /api/vehicles/{id}:
+ *   get:
+ *     summary: Belirli bir aracı getir
+ *     tags: [Vehicles]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Araç bulundu
+ *       404:
+ *         description: Araç bulunamadı
+ *   put:
+ *     summary: Aracı güncelle
+ *     tags: [Vehicles]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               plate_number:
+ *                 type: string
+ *               brand_id:
+ *                 type: integer
+ *               model:
+ *                 type: string
+ *               vehicle_type_id:
+ *                 type: integer
+ *               fuel_type_id:
+ *                 type: integer
+ *               transmission_id:
+ *                 type: integer
+ *               color_id:
+ *                 type: integer
+ *               chassis_number:
+ *                 type: string
+ *               year:
+ *                 type: integer
+ *               purchase_contract_id:
+ *                 type: integer
+ *               acquisition_cost:
+ *                 type: number
+ *               acquisition_date:
+ *                 type: string
+ *                 format: date
+ *               current_status:
+ *                 type: string
+ *               current_client_company_id:
+ *                 type: integer
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Araç güncellendi
+ *       404:
+ *         description: Araç bulunamadı
+ *   delete:
+ *     summary: Aracı sil
+ *     tags: [Vehicles]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       204:
+ *         description: Araç silindi
+ *       404:
+ *         description: Araç bulunamadı
+ */
 
 /**
  * @openapi

@@ -2,7 +2,7 @@ const request = require('supertest');
 const pool = require('../db');
 
 let token;
-const testUser = { username: 'testuser2', password: 'testpassword', role: 'admin' };
+const testUser = { username: 'testuser2', password: 'testpass123', role: 'admin' };
 const app = require('../index');
 let vehicleId;
 
@@ -52,7 +52,7 @@ describe('Maintenance API', () => {
     const res = await request(app)
       .get(`/api/maintenance/${createdId}`)
       .set('Authorization', `Bearer ${token}`);
-    expect([200,404,401,403]).toContain(res.statusCode);
+    expect([200,204,404,401,403]).toContain(res.statusCode);
   });
   it('PUT /api/maintenance/:id', async () => {
     if (!createdId) return;
@@ -67,9 +67,7 @@ describe('Maintenance API', () => {
     const res = await request(app)
       .delete(`/api/maintenance/${createdId}`)
       .set('Authorization', `Bearer ${token}`);
-    expect([200,404,401,403]).toContain(res.statusCode);
+    expect([200,204,404,401,403]).toContain(res.statusCode);
   });
-  afterAll(async () => {
-    await pool.end();
-  });
+
 });

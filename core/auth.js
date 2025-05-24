@@ -18,7 +18,7 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// Rol bazlı erişim kontrolü
+// Rol bazlı erişim kontrolü (rol adı ile)
 function authorizeRole(...roles) {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {

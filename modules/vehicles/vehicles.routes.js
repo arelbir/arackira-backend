@@ -1,6 +1,6 @@
 // modules/vehicles/vehicles.routes.js
 const express = require('express');
-const { getAllVehicles, createVehicle, getVehicleById, updateVehicle, deleteVehicle } = require('./vehicles.controller');
+const { getAllVehicles, createVehicle, getVehicleById, updateVehicle, deleteVehicle, getDraftVehicles, deleteDraftVehicle } = require('./vehicles.controller');
 const { vehicleValidationRules, validate } = require('../../core/validation');
 const { authenticateToken, authorizeRole } = require('../../core/auth');
 const errorHandler = require('../../core/errorHandler');
@@ -29,37 +29,52 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - plate_number
  *             properties:
  *               plate_number:
  *                 type: string
+ *                 description: Plaka numarası (zorunlu)
  *               brand_id:
  *                 type: integer
+ *                 description: Marka ID (opsiyonel)
  *               model:
  *                 type: string
+ *                 description: Model adı (opsiyonel)
  *               vehicle_type_id:
  *                 type: integer
+ *                 description: Araç tipi ID (opsiyonel)
  *               fuel_type_id:
  *                 type: integer
+ *                 description: Yakıt tipi ID (opsiyonel)
  *               chassis_number:
  *                 type: string
+ *                 description: Şasi numarası (opsiyonel)
  *               year:
  *                 type: integer
+ *                 description: Model yılı (opsiyonel)
  *               purchase_contract_id:
  *                 type: integer
+ *                 description: Satın alma sözleşmesi ID (opsiyonel)
  *               acquisition_cost:
  *                 type: number
+ *                 description: Satın alma maliyeti (opsiyonel)
  *               acquisition_date:
  *                 type: string
  *                 format: date
+ *                 description: Satın alma tarihi (opsiyonel)
  *               current_status:
  *                 type: string
+ *                 description: Mevcut durum (opsiyonel)
  *               current_client_company_id:
  *                 type: integer
+ *                 description: Mevcut müşteri firma ID (opsiyonel)
  *               notes:
  *                 type: string
+ *                 description: Notlar (opsiyonel)
  *               vehicle_status_id:
  *                 type: integer
- *                 description: Araç statü ID (vehicle_statuses tablosuna FK)
+ *                 description: Araç statü ID (vehicle_statuses tablosuna FK, opsiyonel)
  *     responses:
  *       201:
  *         description: Araç oluşturuldu
@@ -448,5 +463,38 @@ router.put('/:id', authenticateToken, authorizeRole('admin'), vehicleValidationR
  *               error: Token gerekli
  */
 router.delete('/:id', authenticateToken, authorizeRole('admin'), deleteVehicle);
+
+/**
+ * @openapi
+ * /api/vehicles/drafts:
+ *   get:
+ *     summary: Taslak araçları listeler
+ *     tags: [Vehicles]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Taslak araçlar listelendi
+ * /api/vehicles/drafts/{id}:
+ *   delete:
+ *     summary: Taslak aracı sil
+ *     tags: [Vehicles]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       204:
+ *         description: Taslak araç silindi
+ *       404:
+ *         description: Taslak araç bulunamadı
+ */
+
+router.get('/drafts', authenticateToken, getDraftVehicles);
+router.delete('/drafts/:id', authenticateToken, deleteDraftVehicle);
 
 module.exports = router;

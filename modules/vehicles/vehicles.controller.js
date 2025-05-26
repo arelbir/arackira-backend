@@ -67,4 +67,28 @@ async function deleteVehicle(req, res, next) {
   }
 }
 
-module.exports = { getAllVehicles, createVehicle, getVehicleById, updateVehicle, deleteVehicle };
+// Taslak araçları listele
+async function getDraftVehicles(req, res, next) {
+  try {
+    const drafts = await vehicleModel.getDraftVehicles();
+    res.json(drafts);
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Taslak aracı sil
+async function deleteDraftVehicle(req, res, next) {
+  try {
+    const { id } = req.params;
+    const deleted = await vehicleModel.deleteDraftVehicle(id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Taslak araç bulunamadı veya silinemedi' });
+    }
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getAllVehicles, createVehicle, getVehicleById, updateVehicle, deleteVehicle, getDraftVehicles, deleteDraftVehicle };

@@ -19,6 +19,12 @@ async function getAllVehicleModels() {
   return result.rows.map(row => new VehicleModel(row));
 }
 
+// Yeni fonksiyon: Belirli bir markanın modelleri
+async function getVehicleModelsByBrand(brandId) {
+  const result = await pool.query('SELECT * FROM models WHERE brand_id = $1 ORDER BY id', [brandId]);
+  return result.rows.map(row => new VehicleModel(row));
+}
+
 async function getVehicleModelById(id) {
   const result = await pool.query('SELECT * FROM models WHERE id = $1', [id]);
   if (result.rows.length === 0) return null;
@@ -56,5 +62,6 @@ module.exports = {
   getVehicleModelById,
   createVehicleModel,
   updateVehicleModel,
-  deleteVehicleModel
+  deleteVehicleModel,
+  getVehicleModelsByBrand // export
 };

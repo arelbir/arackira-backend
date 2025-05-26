@@ -4,6 +4,8 @@ const fuelTypesRoutes = require('./fuelTypes.routes');
 const vehicleTypesRoutes = require('./vehicleTypes.routes');
 const transmissionsRoutes = require('./transmissions.routes');
 const colorsRoutes = require('./colors.routes');
+const vehicleStatusesRoutes = require('./vehicleStatuses.routes');
+const branchesRoutes = require('./branches.routes');
 
 module.exports = {
   brandsRoutes,
@@ -12,4 +14,6 @@ module.exports = {
   vehicleTypesRoutes,
   transmissionsRoutes,
   colorsRoutes,
+  vehicleStatusesRoutes,
+  branchesRoutes,
 };

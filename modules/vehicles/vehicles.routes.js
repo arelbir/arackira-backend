@@ -1,9 +1,11 @@
 // modules/vehicles/vehicles.routes.js
 const express = require('express');
 const { getAllVehicles, createVehicle, getVehicleById, updateVehicle, deleteVehicle, getDraftVehicles, deleteDraftVehicle } = require('./vehicles.controller');
+const { downloadTemplate, importVehicles } = require('./vehicles.import.controller');
 const { vehicleValidationRules, validate } = require('../../core/validation');
 const { authenticateToken, authorizeRole } = require('../../core/auth');
 const errorHandler = require('../../core/errorHandler');
+const { uploadExcelMiddleware } = require('../../core/uploadMiddleware');
 
 const router = express.Router();
 
@@ -493,6 +495,60 @@ router.delete('/:id', authenticateToken, authorizeRole('admin'), deleteVehicle);
  *       404:
  *         description: Taslak araç bulunamadı
  */
+
+/**
+ * @openapi
+ * /api/vehicles/import/template:
+ *   get:
+ *     summary: Excel içe aktarım şablonunu indir
+ *     tags: [Vehicles]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Excel şablonu başarıyla oluşturuldu
+ *         content:
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema:
+ *               type: string
+ *               format: binary
+ * /api/vehicles/import:
+ *   post:
+ *     summary: Excel dosyasından araçları içe aktar
+ *     tags: [Vehicles]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Veriler başarıyla içe aktarıldı
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 inserted:
+ *                   type: integer
+ *                 failed:
+ *                   type: integer
+ */
+
+// Toplu içe/dışa aktarım route'ları
+router.get('/import/template', authenticateToken, downloadTemplate);
+router.post('/import', authenticateToken, uploadExcelMiddleware, importVehicles);
 
 router.get('/drafts', authenticateToken, getDraftVehicles);
 router.delete('/drafts/:id', authenticateToken, deleteDraftVehicle);

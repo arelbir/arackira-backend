@@ -31,6 +31,7 @@ class Vehicle {
     casco_expiry_date,
     exhaust_stamp_expiry_date,
     vehicle_status_id,
+    tsb_code,
     is_draft
   }) {
     this.id = id;
@@ -61,6 +62,7 @@ class Vehicle {
     this.casco_expiry_date = casco_expiry_date;
     this.exhaust_stamp_expiry_date = exhaust_stamp_expiry_date;
     this.vehicle_status_id = vehicle_status_id;
+    this.tsb_code = tsb_code;
     this.is_draft = is_draft;
   }
 }
@@ -82,9 +84,9 @@ async function getVehicleById(id) {
 async function createVehicle(data) {
   const result = await pool.query(
     `INSERT INTO vehicles (
-      plate_number, branch_id, vehicle_type_id, brand_id, model_id, version, package, vehicle_group_id, body_type, fuel_type_id, transmission_id, model_year, color_id, engine_power_hp, engine_volume_cc, chassis_number, engine_number, first_registration_date, registration_document_number, vehicle_responsible_id, vehicle_km, next_maintenance_date, inspection_expiry_date, insurance_expiry_date, casco_expiry_date, exhaust_stamp_expiry_date, vehicle_status_id, is_draft
+      plate_number, branch_id, vehicle_type_id, brand_id, model_id, version, package, vehicle_group_id, body_type, fuel_type_id, transmission_id, model_year, color_id, engine_power_hp, engine_volume_cc, chassis_number, engine_number, first_registration_date, registration_document_number, vehicle_responsible_id, vehicle_km, next_maintenance_date, inspection_expiry_date, insurance_expiry_date, casco_expiry_date, exhaust_stamp_expiry_date, vehicle_status_id, tsb_code, is_draft
     ) VALUES (
-      $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28
+      $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29
     ) RETURNING *`,
     [
       data.plate_number,
@@ -114,6 +116,7 @@ async function createVehicle(data) {
       data.casco_expiry_date,
       data.exhaust_stamp_expiry_date,
       data.vehicle_status_id,
+      data.tsb_code,
       data.is_draft === undefined ? false : data.is_draft
     ]
   );
@@ -124,8 +127,8 @@ async function createVehicle(data) {
 async function updateVehicle(id, data) {
   const result = await pool.query(
     `UPDATE vehicles SET
-      plate_number = $1, branch_id = $2, vehicle_type_id = $3, brand_id = $4, model_id = $5, version = $6, package = $7, vehicle_group_id = $8, body_type = $9, fuel_type_id = $10, transmission_id = $11, model_year = $12, color_id = $13, engine_power_hp = $14, engine_volume_cc = $15, chassis_number = $16, engine_number = $17, first_registration_date = $18, registration_document_number = $19, vehicle_responsible_id = $20, vehicle_km = $21, next_maintenance_date = $22, inspection_expiry_date = $23, insurance_expiry_date = $24, casco_expiry_date = $25, exhaust_stamp_expiry_date = $26, vehicle_status_id = $27, is_draft = $28
-    WHERE id = $29 RETURNING *`,
+      plate_number = $1, branch_id = $2, vehicle_type_id = $3, brand_id = $4, model_id = $5, version = $6, package = $7, vehicle_group_id = $8, body_type = $9, fuel_type_id = $10, transmission_id = $11, model_year = $12, color_id = $13, engine_power_hp = $14, engine_volume_cc = $15, chassis_number = $16, engine_number = $17, first_registration_date = $18, registration_document_number = $19, vehicle_responsible_id = $20, vehicle_km = $21, next_maintenance_date = $22, inspection_expiry_date = $23, insurance_expiry_date = $24, casco_expiry_date = $25, exhaust_stamp_expiry_date = $26, vehicle_status_id = $27, tsb_code = $28, is_draft = $29
+    WHERE id = $30 RETURNING *`,
     [
       data.plate_number,
       data.branch_id,
@@ -154,6 +157,7 @@ async function updateVehicle(id, data) {
       data.casco_expiry_date,
       data.exhaust_stamp_expiry_date,
       data.vehicle_status_id,
+      data.tsb_code,
       data.is_draft === undefined ? false : data.is_draft,
       id
     ]

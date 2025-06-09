@@ -85,6 +85,7 @@ const disposalRouter = require('./modules/disposal/disposal.routes');
 const reportsRouter = require('./modules/reports/reports.routes');
 const insuranceRouter = require('./modules/insurance/insurance.routes');
 const vehicleInspectionRouter = require('./modules/vehicleInspection/vehicleInspection.routes');
+const suppliersRouter = require('./modules/suppliers/suppliers.routes');
 
 
 // ------------------------- KULLANICI MODÜLÜ -------------------------
@@ -160,6 +161,7 @@ app.use('/api/maintenance', maintenanceRouter);
 app.use('/api/disposal', disposalRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/insurance', insuranceRouter);
+app.use('/api/suppliers', suppliersRouter);
 app.use('/api/users', usersRouter);
 
 // Araç Lastiği API

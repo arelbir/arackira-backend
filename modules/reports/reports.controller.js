@@ -1,5 +1,6 @@
 // modules/reports/reports.controller.js
 const reportModel = require('./reports.model');
+const pool = require('../../db');
 
 // Örnek: Tüm araçların listesini raporla
 async function getVehicleListReport(req, res, next) {
@@ -14,7 +15,11 @@ async function getVehicleListReport(req, res, next) {
 // Aktif araç sayısı raporu
 async function getActiveVehicleCountReport(req, res, next) {
   try {
-    const result = await pool.query("SELECT COUNT(*) as active_vehicle_count FROM vehicles WHERE current_status = 'available'");
+    const result = await pool.query(
+      `SELECT COUNT(*) AS active_vehicle_count
+       FROM vehicles
+       WHERE vehicle_status_id = 1` // 1 = 'available'
+    );
     res.json({ report: 'active_vehicle_count', data: result.rows[0] });
   } catch (err) {
     next(err);
@@ -41,9 +46,18 @@ async function getRentalCountByClientReport(req, res, next) {
 async function getVehiclesInMaintenanceReport(req, res, next) {
   try {
     const result = await pool.query(`
-      SELECT v.id, v.plate_number, v.brand, v.model, m.id as maintenance_id, m.date as start_date, m.end_date, m.description
-      FROM vehicles v
-      INNER JOIN maintenance_records m ON m.vehicle_id = v.id AND m.end_date IS NULL
+      SELECT v.id,
+             v.plate_number,
+             b.name  AS brand,
+             mdl.name AS model,
+             mr.id   AS maintenance_id,
+             mr.date AS start_date,
+             mr.end_date,
+             mr.description
+      FROM   vehicles v
+      JOIN   maintenance_records mr ON mr.vehicle_id = v.id AND mr.end_date IS NULL
+      LEFT   JOIN brands  b   ON b.id  = v.brand_id
+      LEFT   JOIN models  mdl ON mdl.id = v.model_id
     `);
     res.json({ report: 'vehicles_in_maintenance', data: result.rows });
   } catch (err) {

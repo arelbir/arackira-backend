@@ -69,8 +69,25 @@ class Vehicle {
 
 // Araçları veritabanından çek
 async function getAllVehicles() {
-  const result = await pool.query('SELECT * FROM vehicles');
-  return result.rows.map(row => new Vehicle(row));
+  const result = await pool.query(`
+    SELECT v.*,
+      json_build_object('id', b.id, 'name', b.name)                AS brand,
+      json_build_object('id', mdl.id, 'name', mdl.name)             AS model,
+      json_build_object('id', vt.id, 'name', vt.name)               AS vehicle_type,
+      json_build_object('id', ft.id, 'name', ft.name)               AS fuel_type,
+      json_build_object('id', tr.id, 'name', tr.name)               AS transmission,
+      json_build_object('id', c.id, 'name', c.name)                 AS color,
+      json_build_object('id', vs.id, 'name', vs.name)               AS status
+    FROM vehicles v
+    LEFT JOIN brands b            ON b.id  = v.brand_id
+    LEFT JOIN models mdl          ON mdl.id = v.model_id
+    LEFT JOIN vehicle_types vt    ON vt.id = v.vehicle_type_id
+    LEFT JOIN fuel_types ft       ON ft.id = v.fuel_type_id
+    LEFT JOIN transmissions tr    ON tr.id = v.transmission_id
+    LEFT JOIN colors c            ON c.id  = v.color_id
+    LEFT JOIN vehicle_statuses vs ON vs.id = v.vehicle_status_id
+  `);
+  return result.rows; // nested JSON fields already present
 }
 
 // Belirli bir aracı id ile getir

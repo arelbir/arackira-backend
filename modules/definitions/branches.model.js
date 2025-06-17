@@ -1,5 +1,5 @@
 // modules/definitions/branches.model.js
-// Şube Modeli
+// Ruhsat Sahibi Firma Modeli
 
 const pool = require('../../db');
 
@@ -13,20 +13,20 @@ class Branch {
   }
 }
 
-// Tüm şubeleri getir
+// Tüm Ruhsat Sahibi Firmaleri getir
 async function getAllBranches() {
   const result = await pool.query('SELECT * FROM vehicle_branches ORDER BY id');
   return result.rows.map(row => new Branch(row));
 }
 
-// Belirli bir şubeyi ID ile getir
+// Belirli bir Ruhsat Sahibi Firmayi ID ile getir
 async function getBranchById(id) {
   const result = await pool.query('SELECT * FROM vehicle_branches WHERE id = $1', [id]);
   if (result.rows.length === 0) return null;
   return new Branch(result.rows[0]);
 }
 
-// Yeni şube oluştur
+// Yeni Ruhsat Sahibi Firma oluştur
 async function createBranch(data) {
   const { name, address, phone } = data;
   const result = await pool.query(
@@ -36,7 +36,7 @@ async function createBranch(data) {
   return new Branch(result.rows[0]);
 }
 
-// Şubeyi güncelle
+// Ruhsat Sahibi Firmayi güncelle
 async function updateBranch(id, data) {
   const { name, address, phone } = data;
   const result = await pool.query(
@@ -47,7 +47,7 @@ async function updateBranch(id, data) {
   return new Branch(result.rows[0]);
 }
 
-// Şubeyi sil
+// Ruhsat Sahibi Firmayi sil
 async function deleteBranch(id) {
   const result = await pool.query('DELETE FROM vehicle_branches WHERE id = $1 RETURNING *', [id]);
   if (result.rows.length === 0) return null;

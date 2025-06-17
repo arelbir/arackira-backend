@@ -1,5 +1,5 @@
 // modules/definitions/branches.controller.js
-// Şube Controller
+// Ruhsat Sahibi Firma Controller
 
 const {
   Branch,
@@ -10,7 +10,7 @@ const {
   deleteBranch
 } = require('./branches.model');
 
-// Tüm şubeleri getir
+// Tüm Ruhsat Sahibi Firmaleri getir
 async function handleGetAllBranches(req, res, next) {
   try {
     const branches = await getAllBranches();
@@ -20,19 +20,19 @@ async function handleGetAllBranches(req, res, next) {
   }
 }
 
-// Belirli bir şubeyi getir
+// Belirli bir Ruhsat Sahibi Firmayi getir
 async function handleGetBranchById(req, res, next) {
   try {
     const { id } = req.params;
     const branch = await getBranchById(id);
-    if (!branch) return res.status(404).json({ error: 'Şube bulunamadı' });
+    if (!branch) return res.status(404).json({ error: 'Ruhsat Sahibi Firma bulunamadı' });
     res.json(branch);
   } catch (err) {
     next(err);
   }
 }
 
-// Yeni şube oluştur
+// Yeni Ruhsat Sahibi Firma oluştur
 async function handleCreateBranch(req, res, next) {
   try {
     const created = await createBranch(req.body);
@@ -42,24 +42,24 @@ async function handleCreateBranch(req, res, next) {
   }
 }
 
-// Şubeyi güncelle
+// Ruhsat Sahibi Firmayi güncelle
 async function handleUpdateBranch(req, res, next) {
   try {
     const { id } = req.params;
     const updated = await updateBranch(id, req.body);
-    if (!updated) return res.status(404).json({ error: 'Şube bulunamadı' });
+    if (!updated) return res.status(404).json({ error: 'Ruhsat Sahibi Firma bulunamadı' });
     res.json(updated);
   } catch (err) {
     next(err);
   }
 }
 
-// Şubeyi sil
+// Ruhsat Sahibi Firmayi sil
 async function handleDeleteBranch(req, res, next) {
   try {
     const { id } = req.params;
     const deleted = await deleteBranch(id);
-    if (!deleted) return res.status(404).json({ error: 'Şube bulunamadı' });
+    if (!deleted) return res.status(404).json({ error: 'Ruhsat Sahibi Firma bulunamadı' });
     res.json(deleted);
   } catch (err) {
     next(err);

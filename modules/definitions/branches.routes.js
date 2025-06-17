@@ -13,15 +13,15 @@ const router = express.Router();
  * @openapi
  * /api/branches:
  *   get:
- *     summary: Şubeleri listeler
+ *     summary: Ruhsat Sahibi Firmaleri listeler
  *     tags: [Branches]
  *     security:
  *       - BearerAuth: []
  *     responses:
  *       200:
- *         description: Şubeler listelendi
+ *         description: Ruhsat Sahibi Firmaler listelendi
  *   post:
- *     summary: Yeni şube oluştur
+ *     summary: Yeni Ruhsat Sahibi Firma oluştur
  *     tags: [Branches]
  *     security:
  *       - BearerAuth: []
@@ -40,11 +40,11 @@ const router = express.Router();
  *                 type: string
  *     responses:
  *       201:
- *         description: Şube oluşturuldu
+ *         description: Ruhsat Sahibi Firma oluşturuldu
  *
  * /api/branches/{id}:
  *   get:
- *     summary: Şube detayını getir
+ *     summary: Ruhsat Sahibi Firma detayını getir
  *     tags: [Branches]
  *     security:
  *       - BearerAuth: []
@@ -54,14 +54,14 @@ const router = express.Router();
  *         schema:
  *           type: integer
  *         required: true
- *         description: Şube ID
+ *         description: Ruhsat Sahibi Firma ID
  *     responses:
  *       200:
- *         description: Şube bulundu
+ *         description: Ruhsat Sahibi Firma bulundu
  *       404:
- *         description: Şube bulunamadı
+ *         description: Ruhsat Sahibi Firma bulunamadı
  *   put:
- *     summary: Şubeyi güncelle
+ *     summary: Ruhsat Sahibi Firmayi güncelle
  *     tags: [Branches]
  *     security:
  *       - BearerAuth: []
@@ -71,7 +71,7 @@ const router = express.Router();
  *         schema:
  *           type: integer
  *         required: true
- *         description: Şube ID
+ *         description: Ruhsat Sahibi Firma ID
  *     requestBody:
  *       required: true
  *       content:
@@ -87,11 +87,11 @@ const router = express.Router();
  *                 type: string
  *     responses:
  *       200:
- *         description: Şube güncellendi
+ *         description: Ruhsat Sahibi Firma güncellendi
  *       404:
- *         description: Şube bulunamadı
+ *         description: Ruhsat Sahibi Firma bulunamadı
  *   delete:
- *     summary: Şubeyi sil
+ *     summary: Ruhsat Sahibi Firmayi sil
  *     tags: [Branches]
  *     security:
  *       - BearerAuth: []
@@ -101,12 +101,12 @@ const router = express.Router();
  *         schema:
  *           type: integer
  *         required: true
- *         description: Şube ID
+ *         description: Ruhsat Sahibi Firma ID
  *     responses:
  *       200:
- *         description: Şube silindi
+ *         description: Ruhsat Sahibi Firma silindi
  *       404:
- *         description: Şube bulunamadı
+ *         description: Ruhsat Sahibi Firma bulunamadı
  */
 
 // CRUD endpointleri

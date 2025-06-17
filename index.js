@@ -58,9 +58,11 @@ const clientTypesRouter = require('./modules/definitions/clientTypes.routes');
 const modelsRouter = require('./modules/definitions/models.routes');
 const supplierCategoriesRouter = require('./modules/definitions/supplierCategories.routes');
 const vehicleTypesRouter = require('./modules/definitions/vehicleTypes.routes');
+const hgsRouter = require('./modules/definitions/hgs.routes'); // Araç HGS Tanımları
 const transmissionsRouter = require('./modules/definitions/transmissions.routes');
 const packagesRouter = require('./modules/definitions/packages.routes');
 const vehicleStatusesRouter = require('./modules/definitions/vehicleStatuses.routes');
+const gpsRoutes = require('./modules/definitions/gps.routes');
 // Araç Lastiği Modülü
 const vehicleTiresRouter = require('./modules/vehicleTires/vehicleTires.routes');
 // Araç Servis/Bakım Modülü
@@ -86,7 +88,6 @@ const reportsRouter = require('./modules/reports/reports.routes');
 const insuranceRouter = require('./modules/insurance/insurance.routes');
 const vehicleInspectionRouter = require('./modules/vehicleInspection/vehicleInspection.routes');
 const suppliersRouter = require('./modules/suppliers/suppliers.routes');
-
 
 // ------------------------- KULLANICI MODÜLÜ -------------------------
 
@@ -119,6 +120,7 @@ app.use('/api', (req, res, next) => {
 app.use('/api/colors', colorsRouter);
 app.use('/api/brands', brandsRouter);
 app.use('/api/client-types', clientTypesRouter);
+app.use('/api/hgs', hgsRouter); // Araç HGS Tanımları
 app.use('/api/tire-brands', require('./modules/definitions/tireBrands.routes'));
 app.use('/api/tire-conditions', require('./modules/definitions/tireConditions.routes'));
 app.use('/api/tire-positions', require('./modules/definitions/tirePositions.routes'));
@@ -132,7 +134,7 @@ app.use('/api/payer-types', require('./modules/definitions/payerTypes.routes'));
 app.use('/api/vehicle-penalties', require('./modules/vehiclePenalties/vehiclePenalties.routes'));
 app.use('/api/vehicle-hgs-loadings', require('./modules/vehicleHgsLoadings/vehicleHgsLoadings.routes'));
 app.use('/api/vehicle-statuses', vehicleStatusesRouter);
-
+app.use('/api/gps', gpsRoutes)
 app.use('/api/models', modelsRouter);
 app.use('/api/supplier-categories', supplierCategoriesRouter);
 app.use('/api/vehicle-types', vehicleTypesRouter);

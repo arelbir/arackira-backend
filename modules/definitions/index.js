@@ -6,6 +6,8 @@ const transmissionsRoutes = require('./transmissions.routes');
 const colorsRoutes = require('./colors.routes');
 const vehicleStatusesRoutes = require('./vehicleStatuses.routes');
 const branchesRoutes = require('./branches.routes');
+const hgsRoutes = require('./hgs.routes');
+const gpsRoutes = require('./gps.routes');
 
 module.exports = {
   brandsRoutes,
@@ -16,4 +18,6 @@ module.exports = {
   colorsRoutes,
   vehicleStatusesRoutes,
   branchesRoutes,
+  hgsRoutes,
+  gpsRoutes
 };

@@ -16,7 +16,18 @@ async function getAllVehicles(req, res, next) {
 // Araç ekle
 async function createVehicle(req, res, next) {
   try {
-    const vehicle = await vehicleModel.createVehicle(req.body);
+    // Eğer vehicle_status_id eksikse ve is_draft true ise otomatik olarak 1 ata
+    const DEFAULT_DRAFT_STATUS_ID = 1;
+    const body = {
+      ...req.body,
+      vehicle_status_id:
+        req.body.vehicle_status_id !== undefined
+          ? req.body.vehicle_status_id
+          : req.body.is_draft
+            ? DEFAULT_DRAFT_STATUS_ID
+            : undefined
+    };
+    const vehicle = await vehicleModel.createVehicle(body);
     res.status(201).json(vehicle);
   } catch (err) {
     next(err);

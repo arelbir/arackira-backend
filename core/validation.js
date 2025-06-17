@@ -4,7 +4,7 @@ const { body, validationResult } = require('express-validator');
 
 // Araç ekleme için validasyon kuralları (yalnızca plaka zorunlu, diğer tüm alanlar opsiyonel)
 const vehicleValidationRules = () => [
-  body('plate_number').notEmpty().withMessage('Plaka numarası zorunlu'),
+  body('chassis_number').notEmpty().withMessage('Şasi numarası zorunlu'),
   // Diğer tüm alanlar opsiyonel, ek validasyon yok
 ];
 

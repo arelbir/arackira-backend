@@ -1,9 +1,10 @@
 // modules/clients/clients.routes.js
 const express = require('express');
-const { getAllClients, createClient, getClientById, updateClient, deleteClient } = require('./clients.controller');
+const { getAllClients, createClient, getClientById, updateClient, deleteClient, getClientsByParent, getClientsByType } = require('./clients.controller');
 const { authenticateToken, authorizeRole } = require('../../core/auth');
 const { clientValidationRules, validate } = require('../../core/validation');
 
+const clientAddressesRoutes = require('./client_addresses.routes');
 const router = express.Router();
 
 /**
@@ -82,7 +83,38 @@ const router = express.Router();
  *           type: string
  *         phone:
  *           type: string
+ *         parent_company_id:
+ *           type: integer
+ *           nullable: true
+ *         client_type_id:
+ *           type: integer
+ *           nullable: true
+ *         addresses:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/ClientAddress'
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *     ClientAddress:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         client_id:
+ *           type: integer
+ *         type:
+ *           type: string
+ *         # Açıklama: Adres tipi (ör: billing, shipping, main)
  *         address:
+ *           type: string
+ *         city:
+ *           type: string
+ *         country:
+ *           type: string
+ *         postal_code:
+ *           type: string
+ *         tax_number:
  *           type: string
  *         created_at:
  *           type: string
@@ -97,11 +129,47 @@ router.get('/', authenticateToken, getAllClients);
  *     summary: Yeni müşteri firması ekler
  *     tags:
  *       - Clients
- *     security:
- *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               company_name:
+ *                 type: string
+ *               contact_person:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               parent_company_id:
+ *                 type: integer
+ *                 nullable: true
+ *               client_type_id:
+ *                 type: integer
+ *                 nullable: true
+ *               addresses:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/ClientAddress'
+ *           example:
+ *             company_name: "Test Şirketi"
+ *             contact_person: "Ali Veli"
+ *             email: "test@company.com"
+ *             phone: "+905551112233"
+ *             parent_company_id: 1
+ *             client_type_id: 2
+ *             addresses:
+ *               - type: billing
+ *                 address: "Fatura Cad. 1/1"
+ *                 city: "İstanbul"
+ *                 country: "Türkiye"
+ *                 postal_code: "34000"
+ *                 tax_number: "1234567890"
+ *     security:
+ *       - BearerAuth: []
  *         application/json:
  *           schema:
  *             type: object
@@ -278,5 +346,52 @@ router.put('/:id', authenticateToken, authorizeRole('admin'), clientValidationRu
  *               error: Token gerekli
  */
 router.delete('/:id', authenticateToken, authorizeRole('admin'), deleteClient);
+
+// Alt rota: /api/client-addresses
+router.use('/addresses', clientAddressesRoutes);
+
+/**
+ * @openapi
+ * /api/clients/by-parent/{parent_id}:
+ *   get:
+ *     summary: Belirli bir ana şirkete bağlı tüm müşteri firmalarını listeler
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: parent_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: populate_addresses
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Adresleri de getir (true/false)
+ *     responses:
+ *       200:
+ *         description: Bağlı müşteri firmaları listelendi
+ * /api/clients/by-type/{type_id}:
+ *   get:
+ *     summary: Belirli bir müşteri tipindeki tüm müşteri firmalarını listeler
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: type_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: populate_addresses
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Adresleri de getir (true/false)
+ *     responses:
+ *       200:
+ *         description: Tip bazlı müşteri firmaları listelendi
+ */
+router.get('/by-parent/:parent_id', getClientsByParent);
+router.get('/by-type/:type_id', getClientsByType);
 
 module.exports = router;

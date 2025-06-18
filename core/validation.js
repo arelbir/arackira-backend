@@ -14,7 +14,20 @@ const clientValidationRules = () => [
   body('email').isEmail().withMessage('Geçerli email zorunlu'),
   body('phone').optional().isString(),
   body('contact_person').optional().isString(),
-  body('address').optional().isString()
+  body('parent_company_id').optional().isInt().withMessage('Ana şirket ID sayı olmalı'),
+  body('client_type_id').optional().isInt().withMessage('Müşteri tipi ID sayı olmalı'),
+  // Adresler artık ayrı endpointte, burada adres yok
+];
+
+// Adres için validasyon kuralları
+const clientAddressValidationRules = () => [
+  body('client_id').isInt().withMessage('Müşteri ID zorunlu ve sayı olmalı'),
+  body('type').notEmpty().withMessage('Adres tipi zorunlu'),
+  body('address').notEmpty().withMessage('Adres zorunlu'),
+  body('city').optional().isString(),
+  body('country').optional().isString(),
+  body('postal_code').optional().isString(),
+  body('tax_number').optional().isString(),
 ];
 
 // Kiralama sözleşmesi ekleme için validasyon kuralları
@@ -61,4 +74,5 @@ function validate(req, res, next) {
   next();
 }
 
-module.exports = { vehicleValidationRules, clientValidationRules, rentalValidationRules, maintenanceValidationRules, disposalValidationRules, contractValidationRules, validate };
+module.exports = { vehicleValidationRules, clientValidationRules, clientAddressValidationRules, rentalValidationRules, maintenanceValidationRules, disposalValidationRules, contractValidationRules, validate };
+

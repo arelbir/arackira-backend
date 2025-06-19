@@ -1,11 +1,14 @@
 // modules/clients/clients.routes.js
 const express = require('express');
-const { getAllClients, createClient, getClientById, updateClient, deleteClient, getClientsByParent, getClientsByType } = require('./clients.controller');
+const { getAllClients, createClient, getClientById, updateClient, deleteClient, getClientsByParent, getClientsByType, restoreClient } = require('./clients.controller');
 const { authenticateToken, authorizeRole } = require('../../core/auth');
 const { clientValidationRules, validate } = require('../../core/validation');
 
 const clientAddressesRoutes = require('./client_addresses.routes');
 const router = express.Router();
+
+// Soft deleted müşteriyi geri getir
+router.post('/:id/restore', authenticateToken, authorizeRole('admin'), restoreClient);
 
 /**
  * @openapi

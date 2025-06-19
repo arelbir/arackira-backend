@@ -15,13 +15,13 @@ class ClientCompany {
 
 // Tüm müşteri firmaları getir
 async function getAllClients() {
-  const result = await pool.query('SELECT * FROM client_companies');
+  const result = await pool.query('SELECT * FROM client_companies WHERE deleted_at IS NULL');
   return result.rows.map(row => new ClientCompany(row));
 }
 
 // Belirli bir müşteri firmasını ID ile getir
 async function getClientById(id) {
-  const result = await pool.query('SELECT * FROM client_companies WHERE id = $1', [id]);
+  const result = await pool.query('SELECT * FROM client_companies WHERE id = $1 AND deleted_at IS NULL', [id]);
   if (result.rows.length === 0) return null;
   return new ClientCompany(result.rows[0]);
 }
@@ -46,21 +46,31 @@ async function updateClient(id, data) {
   return new ClientCompany(result.rows[0]);
 }
 
-// Müşteri firması sil
+// Müşteri firması soft delete
 async function deleteClient(id) {
-  const result = await pool.query('DELETE FROM client_companies WHERE id = $1 RETURNING *', [id]);
+  const result = await pool.query('UPDATE client_companies SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING *', [id]);
   if (result.rows.length === 0) return null;
   return new ClientCompany(result.rows[0]);
 }
 
 // Yeni yardımcı fonksiyonlar: parent veya type'a göre müşteri çekme
 async function getClientsByParentId(parent_company_id) {
-  const result = await pool.query('SELECT * FROM client_companies WHERE parent_company_id = $1', [parent_company_id]);
+  const result = await pool.query('SELECT * FROM client_companies WHERE parent_company_id = $1 AND deleted_at IS NULL', [parent_company_id]);
   return result.rows.map(row => new ClientCompany(row));
 }
 async function getClientsByTypeId(client_type_id) {
-  const result = await pool.query('SELECT * FROM client_companies WHERE client_type_id = $1', [client_type_id]);
+  const result = await pool.query('SELECT * FROM client_companies WHERE client_type_id = $1 AND deleted_at IS NULL', [client_type_id]);
   return result.rows.map(row => new ClientCompany(row));
+}
+
+// Silinen müşteri kaydını geri al (restore)
+async function restoreClient(id) {
+  const result = await pool.query(
+    'UPDATE client_companies SET deleted_at = NULL WHERE id = $1 AND deleted_at IS NOT NULL RETURNING *',
+    [id]
+  );
+  if (result.rows.length === 0) return null;
+  return new ClientCompany(result.rows[0]);
 }
 
 module.exports = {
@@ -71,5 +81,6 @@ module.exports = {
   updateClient,
   deleteClient,
   getClientsByParentId,
-  getClientsByTypeId
+  getClientsByTypeId,
+  restoreClient
 };

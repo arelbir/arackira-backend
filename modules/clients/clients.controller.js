@@ -125,5 +125,20 @@ async function getClientsByType(req, res, next) {
   }
 }
 
-module.exports = { getAllClients, createClient, getClientById, updateClient, deleteClient, getClientsByParent, getClientsByType };
+// Soft deleted müşteri kaydını geri getir
+async function restoreClient(req, res, next) {
+  try {
+    const { id } = req.params;
+    const restored = await clientModel.restoreClient(id);
+    if (!restored) {
+      return res.status(404).json({ error: 'Silinmiş müşteri bulunamadı veya zaten aktif.' });
+    }
+    res.json(restored);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getAllClients, createClient, getClientById, updateClient, deleteClient, getClientsByParent, getClientsByType, restoreClient };
+
 

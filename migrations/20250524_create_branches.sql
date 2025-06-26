@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS vehicle_branches (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(255),
+    phone VARCHAR(32),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

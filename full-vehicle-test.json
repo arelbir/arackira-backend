@@ -1,0 +1,117 @@
+{
+  "vehicle": {
+    "plate_number": "34TEST123",
+    "chassis_number": "JT2AE09W3P0039608",
+    "branch_id": 1,
+    "version": "1.6 VTI",
+    "package": "Premium",
+    "vehicle_group_id": 1,
+    "body_type": "Sedan",
+    "engine_power_hp": 120,
+    "engine_volume_cc": 1600,
+    "engine_number": "1ZZ0039608",
+    "first_registration_date": "2022-01-15",
+    "registration_document_number": "TR12345678",
+    "vehicle_responsible_id": 1,
+    "vehicle_km": 15000,
+    "next_maintenance_date": "2025-12-15",
+    "inspection_expiry_date": "2026-01-15",
+    "insurance_expiry_date": "2026-02-15",
+    "casco_expiry_date": "2026-02-15",
+    "exhaust_stamp_expiry_date": "2026-03-15",
+    "brand_id": 1,
+    "fuel_type_id": 1,
+    "model_year": 2022,
+    "vehicle_type_id": 1,
+    "model_id": 1,
+    "transmission_id": 1,
+    "color_id": 1,
+    "vehicle_status_id": 1,
+    "is_draft": false,
+    "tsb_code": "TSB12345",
+    "supplier_id": 1,
+    "purchase_price": 456789.50,
+    "invoice_date": "2022-01-10"
+  },
+  "insurances": [
+    {
+      "insurance_company": "X Sigorta",
+      "policy_number": "POL-12345-UPD",
+      "start_date": "2025-07-01",
+      "end_date": "2026-07-01",
+      "coverage_type": "Kasko",
+      "premium_amount": 5500,
+      "currency": "TRY",
+      "notes": "Tam kapsamlı kasko poliçesi"
+    },
+    {
+      "insurance_company": "Y Sigorta",
+      "policy_number": "POL-67890-NEW",
+      "start_date": "2025-07-01", 
+      "end_date": "2026-01-01",
+      "coverage_type": "Trafik",
+      "premium_amount": 2200,
+      "currency": "TRY",
+      "notes": "Zorunlu trafik sigortası"
+    }
+  ],
+  "inspections": [
+    {
+      "inspection_company_id": 1,
+      "inspection_date": "2025-07-10",
+      "expiry_date": "2026-07-10",
+      "performed_by": "Test Uzmanı",
+      "amount": 800,
+      "payment_type_id": 1,
+      "payment_account_id": 1,
+      "create_payment_record": false,
+      "currency": "TRY",
+      "notes": "Yıllık araç muayenesi"
+    }
+  ],
+  "hgs": [
+    {
+      "hgs_number": "12345678901",
+      "registration_date": "2025-06-01",
+      "loading_date": "2025-07-07",
+      "amount": 500,
+      "payer_type_id": 1,
+      "description": "OGS/HGS kaydı"
+    }
+  ],
+  "utts": [
+    {
+      "utts_code": "UTTS-001",
+      "device_model": "GPS Tracker Pro",
+      "serial_number": "UTT12345678",
+      "installation_date": "2025-06-15",
+      "expiry_date": "2026-06-15",
+      "provider": "Uydu Takip A.Ş.",
+      "status": "active",
+      "notes": "Profesyonel uydu takip cihazı"
+    }
+  ],
+  "services": [
+    {
+      "service_date": "2025-06-01",
+      "exit_date": "2025-06-01",
+      "service_type_id": 1,
+      "service_company_id": 1,
+      "description": "Yağ, filtre değişimi ve genel kontrol",
+      "vehicle_km": 10000,
+      "next_km": 15000,
+      "amount": 2500,
+      "payer_type_id": 1,
+      "vat_group_id": null,
+      "vat_amount": 500,
+      "total_amount": 3000,
+      "currency": "TRY",
+      "invoice_date": "2025-06-01",
+      "due_date": "2025-07-01",
+      "document_no": "INV-12345",
+      "payment_type_id": 1,
+      "payment_account_id": 1,
+      "create_payment_record": false
+    }
+  ]
+}

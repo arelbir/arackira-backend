@@ -1,0 +1,61 @@
+{
+  "vehicle": {
+    "plate": "34ABC123",
+    "brand": "Toyota",
+    "model": "Corolla",
+    "year": 2022,
+    "color": "Beyaz",
+    "chassis_number": "JT2AE09W3P0039608",
+    "engine_number": "1ZZ0039608",
+    "ownership_type": "company",
+    "status": "active",
+    "notes": "Test aracı güncelleme"
+  },
+  "insurances": [
+    {
+      "id": 1,
+      "insurance_company": "X Sigorta",
+      "policy_number": "POL-12345-UPD",
+      "start_date": "2025-07-01",
+      "end_date": "2026-07-01",
+      "coverage_type": "Kasko",
+      "premium_amount": 5500,
+      "currency": "TRY",
+      "notes": "Güncellenen kasko poliçesi"
+    },
+    {
+      "insurance_company": "Y Sigorta",
+      "policy_number": "POL-67890-NEW",
+      "start_date": "2025-07-01", 
+      "end_date": "2026-01-01",
+      "coverage_type": "Trafik",
+      "premium_amount": 2200,
+      "currency": "TRY",
+      "notes": "Yeni eklenen trafik sigortası"
+    }
+  ],
+  "inspections": [
+    {
+      "inspection_date": "2025-07-10",
+      "next_inspection_date": "2026-07-10",
+      "result": "passed",
+      "cost": 800,
+      "currency": "TRY",
+      "notes": "Yıllık araç muayenesi"
+    }
+  ],
+  "hgs": [
+    {
+      "hgs_number": "12345678901",
+      "registration_date": "2025-06-01",
+      "balance": 500,
+      "currency": "TRY",
+      "status": "active",
+      "notes": "OGS/HGS kaydı"
+    }
+  ],
+  "delete": {
+    "insurances": [2],
+    "hgs": [3]
+  }
+}

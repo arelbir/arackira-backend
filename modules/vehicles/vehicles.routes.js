@@ -1,6 +1,6 @@
 // modules/vehicles/vehicles.routes.js
 const express = require('express');
-const { getAllVehicles, createVehicle, getVehicleById, getCompleteVehicleById, updateVehicle, deleteVehicle, getDraftVehicles, deleteDraftVehicle, createVehicleWithRelated, updateVehicleWithRelated } = require('./vehicles.controller');
+const { getAllVehicles, getVehicleById, getCompleteVehicleById, deleteVehicle, getDraftVehicles, deleteDraftVehicle, createVehicleWithRelated, updateVehicleWithRelated } = require('./vehicles.controller');
 const { downloadTemplate, importVehicles } = require('./vehicles.import.controller');
 const { vehicleValidationRules, validate } = require('../../core/validation');
 const { authenticateToken, authorizeRole } = require('../../core/auth');
@@ -20,66 +20,6 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Araçlar listelendi
- *   post:
- *     summary: Yeni araç oluştur
- *     tags: [Vehicles]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - plate_number
- *             properties:
- *               plate_number:
- *                 type: string
- *                 description: Plaka numarası (zorunlu)
- *               brand_id:
- *                 type: integer
- *                 description: Marka ID (opsiyonel)
- *               model:
- *                 type: string
- *                 description: Model adı (opsiyonel)
- *               vehicle_type_id:
- *                 type: integer
- *                 description: Araç tipi ID (opsiyonel)
- *               fuel_type_id:
- *                 type: integer
- *                 description: Yakıt tipi ID (opsiyonel)
- *               chassis_number:
- *                 type: string
- *                 description: Şasi numarası (opsiyonel)
- *               year:
- *                 type: integer
- *                 description: Model yılı (opsiyonel)
- *               purchase_contract_id:
- *                 type: integer
- *                 description: Satın alma sözleşmesi ID (opsiyonel)
- *               acquisition_cost:
- *                 type: number
- *                 description: Satın alma maliyeti (opsiyonel)
- *               acquisition_date:
- *                 type: string
- *                 format: date
- *                 description: Satın alma tarihi (opsiyonel)
- *               current_status:
- *                 type: string
- *                 description: Mevcut durum (opsiyonel)
- *               current_client_company_id:
- *                 type: integer
- *                 description: Mevcut müşteri firma ID (opsiyonel)
- *               notes:
- *                 type: string
- *                 description: Notlar (opsiyonel)
- *               vehicle_status_id:
- *                 type: integer
- *                 description: Araç statü ID (vehicle_statuses tablosuna FK, opsiyonel)
- *     responses:
- *       201:
- *         description: Araç oluşturuldu
  *
  * /api/vehicles/{id}:
  *   get:
@@ -96,60 +36,6 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Araç bulundu
- *       404:
- *         description: Araç bulunamadı
- *   put:
- *     summary: Aracı güncelle
- *     tags: [Vehicles]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               plate_number:
- *                 type: string
- *               brand_id:
- *                 type: integer
- *               model:
- *                 type: string
- *               vehicle_type_id:
- *                 type: integer
- *               fuel_type_id:
- *                 type: integer
- *               transmission_id:
- *                 type: integer
- *               color_id:
- *                 type: integer
- *               chassis_number:
- *                 type: string
- *               year:
- *                 type: integer
- *               purchase_contract_id:
- *                 type: integer
- *               acquisition_cost:
- *                 type: number
- *               acquisition_date:
- *                 type: string
- *                 format: date
- *               current_status:
- *                 type: string
- *               current_client_company_id:
- *                 type: integer
- *               notes:
- *                 type: string
- *     responses:
- *       200:
- *         description: Araç güncellendi
  *       404:
  *         description: Araç bulunamadı
  *   delete:
@@ -267,33 +153,7 @@ const router = express.Router();
  */
 router.get('/', authenticateToken, getAllVehicles);
 
-/**
- * @openapi
- * /api/vehicles:
- *   post:
- *     summary: Yeni araç ekler
- *     tags:
- *       - Vehicles
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               plate_number:
- *                 type: string
- *               brand:
- *                 type: string
- *     responses:
- *       201:
- *         description: Araç başarıyla oluşturuldu
- *       400:
- *         description: Eksik veya hatalı veri
- */
-router.post('/', authenticateToken, authorizeRole('admin'), vehicleValidationRules(), validate, createVehicle);
+
 
 /**
  * @openapi
@@ -423,59 +283,7 @@ router.get('/:id', authenticateToken, getVehicleById);
  */
 router.get('/:id/complete', authenticateToken, getCompleteVehicleById);
 
-/**
- * @openapi
- * /api/vehicles/{id}:
- *   put:
- *     summary: Araç bilgisini güncelle
- *     description: ID ile aracı günceller. JWT ile korunur, admin yetkisi gerektirir.
- *     tags:
- *       - Vehicles
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Vehicle'
- *     responses:
- *       200:
- *         description: Araç güncellendi
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Vehicle'
- *       404:
- *         description: Araç bulunamadı
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *             example:
- *               error: Araç bulunamadı
- *       401:
- *         description: JWT token eksik veya geçersiz
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *             example:
- *               error: Token gerekli
- */
-router.put('/:id', authenticateToken, authorizeRole('admin'), vehicleValidationRules(), validate, updateVehicle);
+
 
 /**
  * @openapi

@@ -13,7 +13,13 @@ const {
 
 async function handleGetAllVehicleModels(req, res, next) {
   try {
-    const models = await getAllVehicleModels();
+    const { brand_id } = req.query;
+    let models;
+    if (brand_id) {
+      models = await getVehicleModelsByBrand(brand_id);
+    } else {
+      models = await getAllVehicleModels();
+    }
     res.json(models);
   } catch (err) {
     next(err);
@@ -62,16 +68,7 @@ async function handleDeleteVehicleModel(req, res, next) {
   }
 }
 
-// Yeni fonksiyon: Belirli bir markanın modelleri
-async function handleGetModelsByBrand(req, res, next) {
-  try {
-    const { brandId } = req.params;
-    const models = await getVehicleModelsByBrand(brandId);
-    res.json(models);
-  } catch (err) {
-    next(err);
-  }
-}
+
 
 module.exports = {
   handleGetAllVehicleModels,
@@ -79,5 +76,5 @@ module.exports = {
   handleCreateVehicleModel,
   handleUpdateVehicleModel,
   handleDeleteVehicleModel,
-  handleGetModelsByBrand // export
+
 };

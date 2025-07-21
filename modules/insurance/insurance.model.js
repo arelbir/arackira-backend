@@ -68,7 +68,7 @@ class Insurance {
     return rows[0];
   }
 
-  static async update(id, data) {
+  static async updateInsurance(id, data) {
     const {
       insurance_type_id,
       insurance_company_id,
@@ -150,7 +150,11 @@ class Insurance {
     );
     return rows;
   }
-}
 
+  static async deleteInsurance(id) {
+    const { rows } = await pool.query('DELETE FROM insurance WHERE id = $1 RETURNING *', [id]);
+    return rows[0];
+  }
+}
 
 module.exports = Insurance;

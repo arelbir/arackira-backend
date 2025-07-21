@@ -165,8 +165,8 @@ async function updateVehicle(id, data) {
   
   const result = await pool.query(
     `UPDATE vehicles SET
-      plate_number = $1, branch_id = $2, vehicle_type_id = $3, brand_id = $4, model_id = $5, version = $6, package = $7, vehicle_group_id = $8, body_type = $9, fuel_type_id = $10, transmission_id = $11, model_year = $12, color_id = $13, engine_power_hp = $14, engine_volume_cc = $15, chassis_number = $16, engine_number = $17, first_registration_date = $18, registration_document_number = $19, vehicle_responsible_id = $20, vehicle_km = $21, next_maintenance_date = $22, inspection_expiry_date = $23, insurance_expiry_date = $24, casco_expiry_date = $25, exhaust_stamp_expiry_date = $26, vehicle_status_id = $27, tsb_code = $28, is_draft = $29
-    WHERE id = $30 RETURNING *`,
+      plate_number = $1, branch_id = $2, vehicle_type_id = $3, brand_id = $4, model_id = $5, version = $6, package = $7, vehicle_group_id = $8, body_type = $9, fuel_type_id = $10, transmission_id = $11, model_year = $12, color_id = $13, engine_power_hp = $14, engine_volume_cc = $15, chassis_number = $16, engine_number = $17, first_registration_date = $18, registration_document_number = $19, vehicle_responsible_id = $20, vehicle_km = $21, next_maintenance_date = $22, inspection_expiry_date = $23, insurance_expiry_date = $24, casco_expiry_date = $25, exhaust_stamp_expiry_date = $26, vehicle_status_id = $27, tsb_code = $28, is_draft = $29, supplier_id = $30, purchase_price = $31, invoice_date = $32
+    WHERE id = $33 RETURNING *`,
     [
       processedData.plate_number,
       processedData.branch_id,
@@ -197,6 +197,9 @@ async function updateVehicle(id, data) {
       processedData.vehicle_status_id,
       processedData.tsb_code,
       processedData.is_draft === undefined ? false : processedData.is_draft,
+      processedData.supplier_id,
+      processedData.purchase_price,
+      processedData.invoice_date,
       id
     ]
   );

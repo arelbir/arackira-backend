@@ -62,10 +62,16 @@ async function deleteHGS(id, deleted_by = null) {
   return new VehicleHGS(result.rows[0]);
 }
 
+async function getByVehicleId(vehicleId) {
+  const result = await pool.query('SELECT * FROM vehicle_hgs WHERE vehicle_id = $1 AND deleted_at IS NULL', [vehicleId]);
+  return result.rows.map(row => new VehicleHGS(row));
+}
+
 module.exports = {
   VehicleHGS,
   getAllHGS,
   getHGSById,
+  getByVehicleId, // Yeni fonksiyonu export et
   createHGS,
   updateHGS,
   deleteHGS

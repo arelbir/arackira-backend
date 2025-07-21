@@ -16,6 +16,8 @@ const vehicleInspectionModel = require('../vehicleInspection/vehicleInspection.m
 const vehiclePenaltiesModel = require('../vehiclePenalties/vehiclePenalties.model');
 const vehicleUttsModel = require('../vehicleUtts/vehicleUtts.model');
 const vehicleHgsLoadingsModel = require('../vehicleHgsLoadings/vehicleHgsLoadings.model');
+const vehicleHgsModel = require('../definitions/hgs.model');
+const gpsModel = require('../definitions/gps.model');
 
 // Araç listele
 async function getAllVehicles(req, res, next) {
@@ -117,30 +119,102 @@ async function getCompleteVehicleById(req, res, next) {
       return res.status(404).json({ error: 'Araç bulunamadı' });
     }
     
-    const vehicle = new Vehicle(result.rows[0]);
+    // Vehicle verileri al
+    const vehicleData = result.rows[0];
+    
+    // Sadece ihtiyaç duyulan alanları içeren optimize edilmiş araç verisi oluştur
+    const optimizedVehicle = {
+      id: vehicleData.id,
+      plate_number: vehicleData.plate_number,
+      branch_id: vehicleData.branch_id,
+      vehicle_type_id: vehicleData.vehicle_type_id,
+      brand_id: vehicleData.brand_id,
+      model_id: vehicleData.model_id,
+      vehicle_group_id: vehicleData.vehicle_group_id,
+      fuel_type_id: vehicleData.fuel_type_id,
+      model_year: vehicleData.model_year,
+      color_id: vehicleData.color_id,
+      chassis_number: vehicleData.chassis_number,
+      engine_number: vehicleData.engine_number,
+      vehicle_responsible_id: vehicleData.vehicle_responsible_id,
+      vehicle_km: vehicleData.vehicle_km,
+      vehicle_status_id: vehicleData.vehicle_status_id,
+      tsb_code: vehicleData.tsb_code,
+      is_draft: vehicleData.is_draft,
+      supplier_id: vehicleData.supplier_id,
+      purchase_price: vehicleData.purchase_price,
+      invoice_date: vehicleData.invoice_date
+    };
     
     // İlişkili verileri paralel olarak getir (performans için)
-    const [insurances, services, tires, inspections, penalties, utts, hgs] = await Promise.all([
+    // Not: tires, services, penalties modülleri roadmap önceliği olmadığı için kaldırıldı
+    // Not: HGS yüklemeler yerine HGS tanımlarını getirmek için vehicleHgsLoadingsModel yerine vehicleHgsModel kullanılıyor
+    const [rawInsurances, rawInspections, utts, rawHgs, gps] = await Promise.all([
       insuranceModel.getByVehicleId(id).catch(() => []),
-      vehicleServicesModel.getByVehicleId(id).catch(() => []),
-      vehicleTiresModel.getByVehicleId(id).catch(() => []),
       vehicleInspectionModel.getByVehicleId(id).catch(() => []),
-      vehiclePenaltiesModel.getByVehicleId(id).catch(() => []),
       vehicleUttsModel.getByVehicleId(id).catch(() => []),
-      vehicleHgsLoadingsModel.getByVehicleId(id).catch(() => [])
+      vehicleHgsModel.getAllHGS().then(result => result.filter(hgs => hgs.vehicle_id === Number(id))).catch(() => []),
+      gpsModel.getByVehicleId(id).catch(() => [])
     ]);
+    
+    // Sigorta verilerini optimize et (gereksiz alanları çıkar)
+    const insurances = rawInsurances.map(insurance => {
+      return {
+        id: insurance.id,
+        vehicle_id: insurance.vehicle_id,
+        insurance_type_id: insurance.insurance_type_id,
+        insurance_company_id: insurance.insurance_company_id,
+        policy_number: insurance.policy_number,
+        tramer: insurance.tramer,
+        start_date: insurance.start_date,
+        end_date: insurance.end_date,
+        total_amount: insurance.total_amount,
+        currency: insurance.currency,
+        description: insurance.description,
+        created_at: insurance.created_at
+      };
+    });
+    
+    // Muayene verilerini optimize et (gereksiz alanları çıkar)
+    const inspections = rawInspections.map(inspection => {
+      return {
+        id: inspection.id,
+        vehicle_id: inspection.vehicle_id,
+        inspection_company_id: inspection.inspection_company_id,
+        inspection_company_name: inspection.inspection_company_name,
+        inspection_date: inspection.inspection_date,
+        expiry_date: inspection.expiry_date,
+        result: inspection.result,
+        description: inspection.description,
+        cost: inspection.amount, // Maliyet alanını ekle
+        created_at: inspection.created_at,
+        updated_at: inspection.updated_at
+      };
+    });
+    
+    // HGS verilerini optimize et (gereksiz alanları çıkar)
+    const hgs = rawHgs.map(hgsItem => {
+      return {
+        id: hgsItem.id,
+        vehicle_id: hgsItem.vehicle_id,
+        hgs_place: hgsItem.hgs_place,
+        hgs_tag_no: hgsItem.hgs_tag_no,
+        hgs_vehicle_class: hgsItem.hgs_vehicle_class,
+        is_active: hgsItem.is_active,
+        created_at: hgsItem.created_at,
+        updated_at: hgsItem.updated_at
+      };
+    });
     
     // Response'u oluştur
     res.json({
-      data: vehicle,
+      data: optimizedVehicle,
       included: {
         insurances,
-        services,
-        tires,
         inspections,
-        penalties,
         utts,
-        hgs
+        hgs,
+        gps
       }
     });
   } catch (err) {

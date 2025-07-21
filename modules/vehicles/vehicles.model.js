@@ -32,7 +32,10 @@ class Vehicle {
     exhaust_stamp_expiry_date,
     vehicle_status_id,
     tsb_code,
-    is_draft
+    is_draft,
+    supplier_id,
+    purchase_price,
+    invoice_date
   }) {
     this.id = id;
     this.plate_number = plate_number;
@@ -64,6 +67,9 @@ class Vehicle {
     this.vehicle_status_id = vehicle_status_id;
     this.tsb_code = tsb_code;
     this.is_draft = is_draft;
+    this.supplier_id = supplier_id;
+    this.purchase_price = purchase_price;
+    this.invoice_date = invoice_date;
   }
 }
 

@@ -1,5 +1,4 @@
 // modules/definitions/gps.model.js
-// modules/definitions/gps.model.js
 const pool = require('../../db');
 
 class VehicleGPS {
@@ -60,12 +59,19 @@ async function deleteGPS(id) {
   return true;
 }
 
+// Araç ID'sine göre GPS kayıtlarını getir
+async function getByVehicleId(vehicleId) {
+  const result = await pool.query('SELECT * FROM vehicle_gps WHERE vehicle_id = $1', [vehicleId]);
+  return result.rows.map(row => new VehicleGPS(row));
+}
+
 module.exports = {
   VehicleGPS,
   getAllGPS,
   getGPSById,
   createGPS,
   updateGPS,
-  deleteGPS
+  deleteGPS,
+  getByVehicleId
 };
 

@@ -68,7 +68,7 @@ class Insurance {
     return rows[0];
   }
 
-  static async updateInsurance(id, data) {
+  static async update(id, data) {
     const {
       insurance_type_id,
       insurance_company_id,
@@ -138,11 +138,6 @@ class Insurance {
     return rows[0];
   }
 
-  static async delete(id) {
-    await pool.query('DELETE FROM insurance WHERE id = $1', [id]);
-    return { deleted: true };
-  }
-  
   static async getByVehicleId(vehicleId) {
     const { rows } = await pool.query(
       'SELECT * FROM insurance WHERE vehicle_id = $1 ORDER BY start_date DESC', 
@@ -151,7 +146,7 @@ class Insurance {
     return rows;
   }
 
-  static async deleteInsurance(id) {
+  static async delete(id) {
     const { rows } = await pool.query('DELETE FROM insurance WHERE id = $1 RETURNING *', [id]);
     return rows[0];
   }

@@ -1,4 +1,5 @@
 // modules/vehicles/vehicles.service.js
+const Vehicle = require('./vehicles.model');
 const pool = require('../../db');
 const vehicleModel = require('./vehicles.model');
 
@@ -9,7 +10,8 @@ const vehicleTiresModel = require('../vehicleTires/vehicleTires.model');
 const vehicleInspectionModel = require('../vehicleInspection/vehicleInspection.model');
 const vehiclePenaltiesModel = require('../vehiclePenalties/vehiclePenalties.model');
 const vehicleUttsModel = require('../vehicleUtts/vehicleUtts.model');
-const vehicleHgsLoadingsModel = require('../vehicleHgsLoadings/vehicleHgsLoadings.model');
+const vehicleHgsModel = require('../definitions/hgs.model');
+const gpsModel = require('../definitions/gps.model');
 const { logInfo, logWarn, logError } = require('../../core/logger');
 
 /**
@@ -92,38 +94,33 @@ async function createVehicleWithRelated(data) {
       await client.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
       
       // 1. Ana araç kaydı
-      const vehicle = await vehicleModel.createVehicle(data.vehicle);
+      const vehicle = await vehicleModel.create(data.vehicle);
       result.data.vehicle = vehicle;
       
       // 2. İlişkili modüller için kayıt işlemleri
       // Sigorta kayıtları
       if (data.insurances) {
-        const insuranceModelAdapter = { create: insuranceModel.create, update: () => Promise.resolve() }; // Update boş, çünkü sadece create kullanılıyor
-        await processRelatedData(client, vehicle.id, data.insurances, insuranceModelAdapter, 'insurances', result);
+        await processRelatedData(client, vehicle.id, data.insurances, insuranceModel, 'insurances', result);
       }
       
       // Muayene kayıtları
       if (data.inspections) {
-        const inspectionModelAdapter = { create: vehicleInspectionModel.create, update: () => Promise.resolve() };
-        await processRelatedData(client, vehicle.id, data.inspections, inspectionModelAdapter, 'inspections', result);
+        await processRelatedData(client, vehicle.id, data.inspections, vehicleInspectionModel, 'inspections', result);
       }
       
       // UTTS kayıtları
       if (data.utts) {
-        const uttsModelAdapter = { create: vehicleUttsModel.createVehicleUtts, update: () => Promise.resolve() };
-        await processRelatedData(client, vehicle.id, data.utts, uttsModelAdapter, 'utts', result);
+        await processRelatedData(client, vehicle.id, data.utts, vehicleUttsModel, 'utts', result);
       }
       
       // HGS kayıtları
       if (data.hgs) {
-        const hgsModelAdapter = { create: vehicleHgsLoadingsModel.create, update: () => Promise.resolve() };
-        await processRelatedData(client, vehicle.id, data.hgs, hgsModelAdapter, 'hgs', result);
+        await processRelatedData(client, vehicle.id, data.hgs, vehicleHgsModel, 'hgs', result);
       }
       
       // Servis kayıtları
       if (data.services) {
-        const servicesModelAdapter = { create: vehicleServicesModel.create, update: () => Promise.resolve() };
-        await processRelatedData(client, vehicle.id, data.services, servicesModelAdapter, 'services', result);
+        await processRelatedData(client, vehicle.id, data.services, vehicleServicesModel, 'services', result);
       }
       
       // Commit transaction
@@ -176,7 +173,7 @@ async function updateVehicleWithRelated(id, data) {
       
       // 1. Ana araç güncelleme (sadece data.vehicle varsa)
       if (data.vehicle) {
-        const vehicle = await vehicleModel.updateVehicle(id, data.vehicle);
+        const vehicle = await vehicleModel.update(id, data.vehicle);
         if (!vehicle) {
           throw new Error(`${id} ID'li araç bulunamadı`);
         }
@@ -197,7 +194,7 @@ async function updateVehicleWithRelated(id, data) {
           for (let i = 0; i < data.delete.insurances.length; i++) {
             try {
               const insuranceId = data.delete.insurances[i];
-              await insuranceModel.deleteInsurance(insuranceId);
+              await insuranceModel.delete(insuranceId);
               deletedInsurances.push(insuranceId);
             } catch (err) {
               insuranceErrors.push({
@@ -227,7 +224,7 @@ async function updateVehicleWithRelated(id, data) {
           for (let i = 0; i < data.delete.inspections.length; i++) {
             try {
               const inspectionId = data.delete.inspections[i];
-              await vehicleInspectionModel.deleteInspection(inspectionId);
+              await vehicleInspectionModel.delete(inspectionId);
               deletedInspections.push(inspectionId);
             } catch (err) {
               inspectionErrors.push({
@@ -257,7 +254,7 @@ async function updateVehicleWithRelated(id, data) {
           for (let i = 0; i < data.delete.hgs.length; i++) {
             try {
               const hgsId = data.delete.hgs[i];
-              await vehicleHgsLoadingsModel.deleteHgsLoading(hgsId);
+              await vehicleHgsModel.delete(hgsId);
               deletedHgs.push(hgsId);
             } catch (err) {
               hgsErrors.push({
@@ -279,6 +276,36 @@ async function updateVehicleWithRelated(id, data) {
           }
         }
         
+        // GPS silme
+        if (data.delete.gps && Array.isArray(data.delete.gps) && data.delete.gps.length > 0) {
+          const deletedGps = [];
+          const gpsErrors = [];
+
+          for (let i = 0; i < data.delete.gps.length; i++) {
+            try {
+              const gpsId = data.delete.gps[i];
+              await gpsModel.delete(gpsId);
+              deletedGps.push(gpsId);
+            } catch (err) {
+              gpsErrors.push({
+                id: data.delete.gps[i],
+                error: err.message
+              });
+            }
+          }
+
+          if (deletedGps.length > 0) {
+            result.data.deleted.gps = deletedGps;
+          }
+
+          if (gpsErrors.length > 0) {
+            if (!result.data.errors.gps) {
+              result.data.errors.gps = [];
+            }
+            result.data.errors.gps.push(...gpsErrors);
+          }
+        }
+
         // UTTS silme
         if (data.delete.utts && Array.isArray(data.delete.utts) && data.delete.utts.length > 0) {
           const deletedUtts = [];
@@ -287,7 +314,7 @@ async function updateVehicleWithRelated(id, data) {
           for (let i = 0; i < data.delete.utts.length; i++) {
             try {
               const uttId = data.delete.utts[i];
-              await vehicleUttsModel.deleteUtt(uttId);
+              await vehicleUttsModel.delete(uttId);
               deletedUtts.push(uttId);
             } catch (err) {
               uttsErrors.push({
@@ -317,7 +344,7 @@ async function updateVehicleWithRelated(id, data) {
           for (let i = 0; i < data.delete.services.length; i++) {
             try {
               const serviceId = data.delete.services[i];
-              await vehicleServicesModel.deleteService(serviceId);
+              await vehicleServicesModel.delete(serviceId);
               deletedServices.push(serviceId);
             } catch (err) {
               servicesErrors.push({
@@ -344,47 +371,32 @@ async function updateVehicleWithRelated(id, data) {
       if (data.insurances) {
         // insuranceModel'in .create ve .update metodları olduğunu varsayıyoruz.
         // Eğer metod isimleri farklıysa (createInsurance gibi), model nesnesini ona göre adapte etmeliyiz.
-        const insuranceModelAdapter = {
-            create: insuranceModel.createInsurance,
-            update: insuranceModel.updateInsurance
-        };
-        await processRelatedData(client, id, data.insurances, insuranceModelAdapter, 'insurances', result);
+        await processRelatedData(client, id, data.insurances, insuranceModel, 'insurances', result);
       }
       
       // Muayene güncelleme/ekleme (Refactor Edilmiş)
       if (data.inspections) {
-        const inspectionModelAdapter = {
-            create: vehicleInspectionModel.createInspection,
-            update: vehicleInspectionModel.updateInspection
-        };
-        await processRelatedData(client, id, data.inspections, inspectionModelAdapter, 'inspections', result);
+        await processRelatedData(client, id, data.inspections, vehicleInspectionModel, 'inspections', result);
       }
       
       // HGS Yükleme güncelleme/ekleme (Refactor Edilmiş)
       if (data.hgs) {
-        const hgsModelAdapter = {
-            create: vehicleHgsLoadingsModel.createHgsLoading,
-            update: vehicleHgsLoadingsModel.updateHgsLoading
-        };
-        await processRelatedData(client, id, data.hgs, hgsModelAdapter, 'hgs', result);
+        await processRelatedData(client, id, data.hgs, vehicleHgsModel, 'hgs', result);
+      }
+
+      // GPS güncelleme/ekleme
+      if (data.gps) {
+        await processRelatedData(client, id, data.gps, gpsModel, 'gps', result);
       }
       
       // UTTS güncelleme/ekleme (Refactor Edilmiş)
       if (data.utts) {
-        const uttsModelAdapter = {
-            create: vehicleUttsModel.createVehicleUtts,
-            update: vehicleUttsModel.updateUtt
-        };
-        await processRelatedData(client, id, data.utts, uttsModelAdapter, 'utts', result);
+        await processRelatedData(client, id, data.utts, vehicleUttsModel, 'utts', result);
       }
       
       // Servis güncelleme/ekleme (Refactor Edilmiş)
       if (data.services) {
-        const servicesModelAdapter = {
-            create: vehicleServicesModel.createService,
-            update: vehicleServicesModel.updateService
-        };
-        await processRelatedData(client, id, data.services, servicesModelAdapter, 'services', result);
+        await processRelatedData(client, id, data.services, vehicleServicesModel, 'services', result);
       }
       
       await client.query('COMMIT');
@@ -467,15 +479,13 @@ async function getCompleteVehicleById(id) {
     updated_at: inspection.updated_at
   }));
 
-  const hgs = rawHgs.map(hgsItem => ({
+      const hgs = rawHgs.map(hgsItem => ({
     id: hgsItem.id,
     vehicle_id: hgsItem.vehicle_id,
-    hgs_provider_id: hgsItem.hgs_provider_id,
-    hgs_number: hgsItem.hgs_number,
-    balance: hgsItem.balance,
-    status: hgsItem.status,
-    start_date: hgsItem.start_date,
-    end_date: hgsItem.end_date
+    hgs_place: hgsItem.hgs_place,
+    hgs_tag_no: hgsItem.hgs_tag_no,
+    hgs_vehicle_class: hgsItem.hgs_vehicle_class,
+    is_active: hgsItem.is_active
   }));
 
   return {
@@ -491,7 +501,11 @@ async function getCompleteVehicleById(id) {
 }
 
 module.exports = {
+  getAllVehicles: Vehicle.getAll,
+  getCompleteVehicleById,
+  deleteVehicle: Vehicle.delete,
+  getDraftVehicles: Vehicle.getDraftVehicles,
+  deleteDraftVehicle: Vehicle.deleteDraft,
   createVehicleWithRelated,
   updateVehicleWithRelated,
-  getCompleteVehicleById
 };

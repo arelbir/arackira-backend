@@ -80,24 +80,10 @@ router.get('/vehicles/:vehicleId/utts', authenticateToken, handleGetVehicleUtts)
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - utts_code
- *             properties:
- *               purchase_date:
- *                 type: string
- *                 format: date
- *                 description: Satın alım tarihi
- *               installation_date:
- *                 type: string
- *                 format: date
- *                 description: Montaj tarihi
- *               utts_code:
- *                 type: string
- *                 description: utts kodu
+ *             $ref: '#/components/schemas/VehicleUttsCreate'
  *     responses:
  *       201:
- *         description: utts bilgisi başarıyla eklendi
+ *         description: UTTS bilgisi başarıyla eklendi
  *       404:
  *         description: Araç bulunamadı
  *       409:
@@ -109,9 +95,9 @@ router.post('/vehicles/:vehicleId/utts', authenticateToken, handleCreateVehicleU
 
 /**
  * @openapi
- * /api/vehicles/{vehicleId}/utts:
+ * /api/vehicles/{vehicleId}/utts/{uttsId}:
  *   put:
- *     summary: Aracın utts bilgilerini günceller
+ *     summary: Belirli bir UTTS kaydını günceller
  *     tags: [Vehicleutts]
  *     security:
  *       - BearerAuth: []
@@ -119,42 +105,30 @@ router.post('/vehicles/:vehicleId/utts', authenticateToken, handleCreateVehicleU
  *       - in: path
  *         name: vehicleId
  *         required: true
- *         schema:
- *           type: integer
- *         description: Aracın ID'si
+ *         schema: { type: integer }
+ *         description: Aracın ID'si (şu an için kullanılmıyor, gelecekte yetkilendirme için tutulabilir)
+ *       - in: path
+ *         name: uttsId
+ *         required: true
+ *         schema: { type: integer }
+ *         description: Güncellenecek UTTS kaydının ID'si
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               purchase_date:
- *                 type: string
- *                 format: date
- *                 description: Satın alım tarihi
- *               installation_date:
- *                 type: string
- *                 format: date
- *                 description: Montaj tarihi
- *               utts_code:
- *                 type: string
- *                 description: utts kodu
+ *             $ref: '#/components/schemas/VehicleUttsUpdate'
  *     responses:
  *       200:
- *         description: utts bilgileri başarıyla güncellendi
- *       404:
- *         description: utts bilgisi bulunamadı
- *       401:
- *         description: Yetkisiz erişim
+ *         description: UTTS bilgisi başarıyla güncellendi
  */
-router.put('/vehicles/:vehicleId/utts', authenticateToken, handleUpdateVehicleUtts);
+router.put('/vehicles/:vehicleId/utts/:uttsId', authenticateToken, handleUpdateVehicleUtts);
 
 /**
  * @openapi
- * /api/vehicles/{vehicleId}/utts:
+ * /api/vehicles/{vehicleId}/utts/{uttsId}:
  *   delete:
- *     summary: Aracın utts bilgilerini siler
+ *     summary: Belirli bir UTTS kaydını siler
  *     tags: [Vehicleutts]
  *     security:
  *       - BearerAuth: []
@@ -162,17 +136,17 @@ router.put('/vehicles/:vehicleId/utts', authenticateToken, handleUpdateVehicleUt
  *       - in: path
  *         name: vehicleId
  *         required: true
- *         schema:
- *           type: integer
- *         description: Aracın ID'si
+ *         schema: { type: integer }
+ *         description: Aracın ID'si (şu an için kullanılmıyor, gelecekte yetkilendirme için tutulabilir)
+ *       - in: path
+ *         name: uttsId
+ *         required: true
+ *         schema: { type: integer }
+ *         description: Silinecek UTTS kaydının ID'si
  *     responses:
  *       204:
- *         description: utts bilgileri başarıyla silindi
- *       404:
- *         description: utts bilgisi bulunamadı
- *       401:
- *         description: Yetkisiz erişim
+ *         description: UTTS bilgisi başarıyla silindi
  */
-router.delete('/vehicles/:vehicleId/utts', authenticateToken, handleDeleteVehicleUtts);
+router.delete('/vehicles/:vehicleId/utts/:uttsId', authenticateToken, handleDeleteVehicleUtts);
 
 module.exports = router;

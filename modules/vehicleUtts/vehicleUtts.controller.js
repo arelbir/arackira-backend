@@ -7,15 +7,15 @@ const vehicleUttsModel = require('./vehicleUtts.model');
 async function handleGetVehicleUtts(req, res, next) {
   try {
     const { vehicleId } = req.params;
-    const uttsInfo = await vehicleUttsModel.getVehicleUttsById(vehicleId);
-    
-    if (!uttsInfo) {
-      return res.status(404).json({ error: 'utts bilgisi bulunamadı' });
+    const uttsInfo = await vehicleUttsModel.getByVehicleId(vehicleId);
+
+    if (!uttsInfo || uttsInfo.length === 0) {
+      return res.status(404).json({ error: 'Araca ait UTTS bilgisi bulunamadı' });
     }
-    
+
     res.json(uttsInfo);
   } catch (err) {
-    logError(`utts bilgisi getirme hatası: ${err.message}`);
+    logError(`UTTS bilgisi getirme hatası: ${err.message}`);
     next(errorHandler(err));
   }
 }
@@ -24,27 +24,14 @@ async function handleGetVehicleUtts(req, res, next) {
 async function handleCreateVehicleUtts(req, res, next) {
   try {
     const { vehicleId } = req.params;
-    const { purchase_date, installation_date, utts_code } = req.body;
+    const data = { ...req.body, vehicle_id: vehicleId };
 
-    const data = {
-      vehicle_id: vehicleId,
-      purchase_date,
-      installation_date,
-      utts_code
-    };
+    const uttsInfo = await vehicleUttsModel.create(data);
 
-    const uttsInfo = await vehicleUttsModel.createVehicleUtts(data);
-    
-    logInfo(`Araç ID ${vehicleId} için yeni utts bilgisi eklendi`);
+    logInfo(`Araç ID ${vehicleId} için yeni UTTS bilgisi eklendi.`);
     res.status(201).json(uttsInfo);
   } catch (err) {
-    if (err.message === 'Araç bulunamadı') {
-      return res.status(404).json({ error: err.message });
-    } else if (err.message === 'Bu araç için zaten utts bilgisi mevcut') {
-      return res.status(409).json({ error: err.message });
-    }
-    
-    logError(`utts bilgisi ekleme hatası: ${err.message}`);
+    logError(`UTTS bilgisi ekleme hatası: ${err.message}`);
     next(errorHandler(err));
   }
 }
@@ -52,25 +39,18 @@ async function handleCreateVehicleUtts(req, res, next) {
 // utts bilgisini güncelle
 async function handleUpdateVehicleUtts(req, res, next) {
   try {
-    const { vehicleId } = req.params;
-    const { purchase_date, installation_date, utts_code } = req.body;
+    // Bu rota /vehicles/:vehicleId/utts/:uttsId şeklinde olmalı, 
+    // ancak şimdilik vehicleId üzerinden ilk bulduğunu güncelliyor.
+    // Doğru implementasyon için uttsId'nin de route'a eklenmesi gerekir.
+    const { uttsId } = req.params; // Varsayımsal, rota güncellenmeli
+    const data = req.body;
 
-    const data = {
-      purchase_date,
-      installation_date,
-      utts_code
-    };
+    const updatedUtts = await vehicleUttsModel.update(uttsId, data);
 
-    const updatedutts = await vehicleUttsModel.updateVehicleUtts(vehicleId, data);
-    
-    logInfo(`Araç ID ${vehicleId} için utts bilgisi güncellendi`);
-    res.json(updatedutts);
+    logInfo(`UTTS ID ${uttsId} için bilgi güncellendi.`);
+    res.json(updatedUtts);
   } catch (err) {
-    if (err.message === 'utts bilgisi bulunamadı') {
-      return res.status(404).json({ error: err.message });
-    }
-    
-    logError(`utts bilgisi güncelleme hatası: ${err.message}`);
+    logError(`UTTS bilgisi güncelleme hatası: ${err.message}`);
     next(errorHandler(err));
   }
 }
@@ -78,18 +58,14 @@ async function handleUpdateVehicleUtts(req, res, next) {
 // utts bilgisini sil
 async function handleDeleteVehicleUtts(req, res, next) {
   try {
-    const { vehicleId } = req.params;
+    const { uttsId } = req.params; // Varsayımsal, rota güncellenmeli
 
-    await vehicleUttsModel.deleteVehicleUtts(vehicleId);
-    
-    logInfo(`Araç ID ${vehicleId} için utts bilgisi silindi`);
+    await vehicleUttsModel.delete(uttsId);
+
+    logInfo(`UTTS ID ${uttsId} için bilgi silindi.`);
     res.status(204).end();
   } catch (err) {
-    if (err.message === 'utts bilgisi bulunamadı') {
-      return res.status(404).json({ error: err.message });
-    }
-    
-    logError(`utts bilgisi silme hatası: ${err.message}`);
+    logError(`UTTS bilgisi silme hatası: ${err.message}`);
     next(errorHandler(err));
   }
 }

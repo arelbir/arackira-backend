@@ -63,7 +63,7 @@ class VehicleInspection {
     return rows[0];
   }
 
-  static async updateInspection(id, data) {
+  static async update(id, data) {
     const {
       vehicle_id,
       inspection_company_id,
@@ -111,11 +111,6 @@ class VehicleInspection {
   }
 
   static async delete(id) {
-    const { rowCount } = await pool.query('DELETE FROM vehicle_inspections WHERE id = $1', [id]);
-    return rowCount > 0;
-  }
-
-  static async deleteInspection(id) {
     const { rows } = await pool.query('DELETE FROM vehicle_inspections WHERE id = $1 RETURNING *', [id]);
     return rows[0];
   }

@@ -100,6 +100,7 @@ const errorHandler = require('./core/errorHandler');
 const logger = require('./core/logger');
 
 logger.logInfo('Uygulama başlatılıyor...');
+logger.logInfo('ALLAH BÜYÜKTÜR!');
 
 // ------------------------- AUTH MIDDLEWARE -------------------------
 const { authenticateToken } = require('./core/auth');

@@ -1,6 +1,8 @@
 // vehicleInspection.model.js
 const pool = require('../../db');
 
+const format = require('pg-format');
+
 class VehicleInspection {
   static async getAll() {
     const { rows } = await pool.query('SELECT * FROM vehicle_inspections ORDER BY id DESC');
@@ -114,6 +116,35 @@ class VehicleInspection {
     const { rows } = await pool.query('DELETE FROM vehicle_inspections WHERE id = $1 RETURNING *', [id]);
     return rows[0];
   }
+
+  static async bulkCreate(records, client) {
+    if (!records || records.length === 0) {
+      return [];
+    }
+
+    const db = client || pool;
+
+    const values = records.map(r => [r.vehicle_id, r.inspection_date, r.expiry_date, r.inspection_company_id]);
+    const query = format('INSERT INTO vehicle_inspections (vehicle_id, inspection_date, expiry_date, inspection_company_id) VALUES %L RETURNING *', values);
+    
+    const { rows } = await db.query(query);
+    return rows;
+  }
+
+  static async deleteByVehicleId(vehicleId, options = {}) {
+    const db = options.client || pool;
+    const { rows } = await db.query('DELETE FROM vehicle_inspections WHERE vehicle_id = $1 RETURNING *', [vehicleId]);
+    return rows;
+  }
 }
 
-module.exports = VehicleInspection;
+module.exports = {
+  getAll: VehicleInspection.getAll,
+  getById: VehicleInspection.getById,
+  getByVehicleId: VehicleInspection.getByVehicleId,
+  create: VehicleInspection.create,
+  update: VehicleInspection.update,
+  delete: VehicleInspection.delete,
+  bulkCreate: VehicleInspection.bulkCreate,
+  deleteByVehicleId: VehicleInspection.deleteByVehicleId
+};

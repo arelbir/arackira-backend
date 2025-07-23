@@ -26,4 +26,11 @@ class InsuranceCompany {
   }
 }
 
-module.exports = InsuranceCompany;
+module.exports = {
+  InsuranceCompany,
+  getAll: InsuranceCompany.getAll,
+  getById: InsuranceCompany.getById,
+  create: InsuranceCompany.create,
+  update: InsuranceCompany.update,
+  delete: InsuranceCompany.delete
+};

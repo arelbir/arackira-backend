@@ -2,6 +2,7 @@
 // Araç utts Modeli
 
 const pool = require('../../db');
+const format = require('pg-format');
 
 class VehicleUtts {
   // Belirli bir aracın utts bilgilerini getir
@@ -50,6 +51,33 @@ class VehicleUtts {
 
     return result.rows[0];
   }
+
+  static async bulkCreate(records, client) {
+    if (!records || records.length === 0) {
+      return [];
+    }
+
+    const db = client || pool;
+
+    const values = records.map(r => [r.vehicle_id, r.utts_code, r.purchase_date, r.installation_date]);
+    const query = format('INSERT INTO vehicle_utts (vehicle_id, utts_code, purchase_date, installation_date) VALUES %L RETURNING *', values);
+    
+    const { rows } = await db.query(query);
+    return rows;
+  }
+
+  static async deleteByVehicleId(vehicleId, options = {}) {
+    const db = options.client || pool;
+    const { rows } = await db.query('DELETE FROM vehicle_utts WHERE vehicle_id = $1 RETURNING *', [vehicleId]);
+    return rows;
+  }
 }
 
-module.exports = VehicleUtts;
+module.exports = {
+  getByVehicleId: VehicleUtts.getByVehicleId,
+  create: VehicleUtts.create,
+  update: VehicleUtts.update,
+  delete: VehicleUtts.delete,
+  bulkCreate: VehicleUtts.bulkCreate,
+  deleteByVehicleId: VehicleUtts.deleteByVehicleId
+};

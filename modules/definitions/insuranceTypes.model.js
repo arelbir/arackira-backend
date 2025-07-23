@@ -26,4 +26,11 @@ class InsuranceType {
   }
 }
 
-module.exports = InsuranceType;
+module.exports = {
+  InsuranceType,
+  getAll: InsuranceType.getAll,
+  getById: InsuranceType.getById,
+  create: InsuranceType.create,
+  update: InsuranceType.update,
+  delete: InsuranceType.delete
+};

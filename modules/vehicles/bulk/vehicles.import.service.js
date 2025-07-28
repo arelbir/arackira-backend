@@ -3,20 +3,20 @@
  * @description Handles the business logic for vehicle and related data imports from Excel.
  */
 
-const excelService = require('../../core/excelService');
+const excelService = require('../../../core/excelService');
 const { getSheetsConfig } = require('./vehicles.import.config');
-const { logInfo, logWarn, logError } = require('../../core/logger');
+const { logInfo, logWarn, logError } = require('../../../core/logger');
 const _ = require('lodash');
-const pool = require('../../db');
+const pool = require('../../../db');
 
 // Model Map - Refactored to use direct model exports
 const models = {
-    Vehicles: require('./vehicles.model'),
-    Insurances: require('../insurance/insurance.model'),
-    Inspections: require('../vehicleInspection/vehicleInspection.model'),
-    HGS: require('../definitions/hgs.model'),
-    GPS: require('../definitions/gps.model'),
-    UTTS: require('../vehicleUtts/vehicleUtts.model'),
+    Vehicles: require('../vehicles.model'),
+    Insurances: require('../../insurance/insurance.model'),
+    Inspections: require('../../vehicleInspection/vehicleInspection.model'),
+    HGS: require('../../definitions/hgs.model'),
+    GPS: require('../../definitions/gps.model'),
+    UTTS: require('../../vehicleUtts/vehicleUtts.model'),
 };
 
 /**
@@ -25,12 +25,95 @@ const models = {
  * @param {Array} sheetsConfig - The configuration for all sheets.
  * @returns {Object} - Contains validated data and errors.
  */
+/**
+ * Performs advanced business logic validation after initial schema parsing.
+ * Checks for NaN values, uniqueness (in-file and vs DB), and foreign key existence.
+ * @param {Object} validatedData - Data that has passed Zod schema validation.
+ * @param {Array} allErrors - The running list of errors to append to.
+ */
+async function validateBusinessRules(validatedData, allErrors) {
+    logInfo('Adım 2.5: Gelişmiş iş kuralları doğrulaması başlatılıyor...');
+    const vehicles = validatedData.Vehicles || [];
+    if (vehicles.length === 0) {
+        logInfo('Doğrulanacak araç verisi bulunmuyor.');
+        return; // No vehicles to validate
+    }
+
+    // --- Check 1: NaN values for coerced numbers ---
+    vehicles.forEach((vehicle, index) => {
+        const numericFields = ['brand_id', 'model_id', 'model_year', 'color_id', 'fuel_type_id', 'branch_id', 'vehicle_km', 'vehicle_type_id', 'supplier_id', 'purchase_price'];
+        for (const field of numericFields) {
+            if (vehicle[field] !== undefined && vehicle[field] !== null && isNaN(vehicle[field])) {
+                allErrors.push({ sheet: 'Vehicles', data: vehicle, error: `Satır ${index + 2}: '${field}' alanı için girilen değer ('${vehicle[`_${field}_original}`] || ''}') geçerli bir sayıya dönüştürülemedi.` });
+            }
+        }
+    });
+
+    // --- Check 2: In-file uniqueness for chassis and plate numbers ---
+    const chassisCounts = _.countBy(vehicles, 'chassis_number');
+    const plateCounts = _.countBy(vehicles.filter(v => v.plate_number), 'plate_number');
+
+    vehicles.forEach((vehicle, index) => {
+        if (chassisCounts[vehicle.chassis_number] > 1) {
+            allErrors.push({ sheet: 'Vehicles', data: vehicle, error: `Satır ${index + 2}: Şasi numarası '${vehicle.chassis_number}' bu dosyada birden fazla kez kullanılmış.` });
+        }
+        if (vehicle.plate_number && plateCounts[vehicle.plate_number] > 1) {
+            allErrors.push({ sheet: 'Vehicles', data: vehicle, error: `Satır ${index + 2}: Plaka '${vehicle.plate_number}' bu dosyada birden fazla kez kullanılmış.` });
+        }
+    });
+
+    // Stop if there are fundamental errors before hitting the DB
+    if (allErrors.length > 0) {
+        logWarn(`İlk kontrollerde ${allErrors.length} hata bulundu. Veritabanı kontrolü atlanıyor.`);
+        return;
+    }
+
+    // --- Check 3 & 4: DB Uniqueness and Foreign Key Existence ---
+    const allChassis = vehicles.map(v => v.chassis_number);
+    const allPlates = vehicles.map(v => v.plate_number).filter(Boolean);
+    const allBrandIds = [...new Set(vehicles.map(v => v.brand_id).filter(Boolean))];
+
+    const [existingChassisResult, existingPlatesResult, existingBrandsResult] = await Promise.all([
+        pool.query('SELECT chassis_number FROM vehicles WHERE chassis_number = ANY($1::text[])', [allChassis]),
+        pool.query('SELECT plate_number FROM vehicles WHERE plate_number = ANY($1::text[])', [allPlates]),
+        pool.query('SELECT id FROM brands WHERE id = ANY($1::int[])', [allBrandIds]),
+    ]);
+
+    const existingChassis = new Set(existingChassisResult.rows.map(r => r.chassis_number));
+    const existingPlates = new Set(existingPlatesResult.rows.map(r => r.plate_number));
+    const validBrandIds = new Set(existingBrandsResult.rows.map(r => r.id));
+
+    vehicles.forEach((vehicle, index) => {
+        if (existingChassis.has(vehicle.chassis_number)) {
+            // This is not an error for updates, but we could add logic here if needed.
+            // For now, we only care about new vehicles having unique chassis.
+        }
+        if (vehicle.plate_number && existingPlates.has(vehicle.plate_number)) {
+            allErrors.push({ sheet: 'Vehicles', data: vehicle, error: `Satır ${index + 2}: Plaka '${vehicle.plate_number}' sistemde zaten kayıtlı.` });
+        }
+        if (vehicle.brand_id && !validBrandIds.has(vehicle.brand_id)) {
+            allErrors.push({ sheet: 'Vehicles', data: vehicle, error: `Satır ${index + 2}: Marka ID '${vehicle.brand_id}' sistemde bulunamadı.` });
+        }
+        // TODO: Add similar checks for model_id, color_id, etc.
+    });
+
+    logInfo(`İş kuralları doğrulaması tamamlandı. Eklenen yeni hata sayısı: ${allErrors.length}`);
+}
+
+
 function validateAllData(allData, sheetsConfig) {
     const validatedData = {};
     const allErrors = [];
 
-    for (const config of sheetsConfig) {
+        for (const config of sheetsConfig) {
         const { sheetName, schema } = config;
+
+        // Şema tanımlı değilse bu sayfayı atla
+        if (!schema) {
+            logWarn(`'${sheetName}' sayfası için doğrulama şeması (schema) bulunamadı. Bu sayfa atlanıyor.`);
+            continue;
+        }
+
         const sheetData = allData[sheetName] || [];
         validatedData[sheetName] = [];
 
@@ -39,7 +122,8 @@ function validateAllData(allData, sheetsConfig) {
             if (result.success) {
                 validatedData[sheetName].push(result.data);
             } else {
-                const errorMessages = result.error.errors.map(e => e.message).join(', ');
+                // result.error'un varlığını kontrol et
+                                const errorMessages = result.error?.issues?.map(e => e.message).join(', ') || 'Bilinmeyen doğrulama hatası';
                 allErrors.push({ sheet: sheetName, data: row, error: errorMessages });
             }
         }
@@ -77,7 +161,25 @@ async function processImport(fileBuffer) {
     logInfo('Adım 2: Veriler Zod şemaları ile doğrulanıyor...');
     const { validatedData, allErrors: validationErrors } = validateAllData(allData, sheetsConfig);
     allErrors.push(...validationErrors);
-    logInfo(`Adım 2 Tamamlandı: Doğrulama tamamlandı. Bulunan hata sayısı: ${validationErrors.length}`);
+    logInfo(`Adım 2 Tamamlandı: Şema doğrulaması tamamlandı. Bulunan hata sayısı: ${validationErrors.length}`);
+
+    // Adım 2.5: İş Mantığı Doğrula (Yeni Eklenen Adım)
+    if (validationErrors.length === 0) { // Sadece temel şema geçerliyse DB'ye git
+        await validateBusinessRules(validatedData, allErrors);
+    }
+
+    // Eğer bu noktada herhangi bir hata varsa, işlemi durdur ve raporla
+    if (allErrors.length > 0) {
+        logWarn(`Toplam ${allErrors.length} doğrulama hatası bulundu. Veritabanı işlemi iptal ediliyor.`);
+        const errorReportBuffer = await excelService.generateErrorReport(allErrors, sheetsConfig);
+        return {
+            success: false,
+            message: `Veri doğrulama başarısız. ${allErrors.length} hata bulundu.`,
+            inserted: 0,
+            failed: allData.Vehicles?.length || 0,
+            errorReport: { filename: `import_hatalari.xlsx`, buffer: errorReportBuffer.toString('base64') }
+        };
+    }
 
     // Adım 3: Veri Grupla
     logInfo('Adım 3: Veriler şasi numarasına göre gruplanıyor...');

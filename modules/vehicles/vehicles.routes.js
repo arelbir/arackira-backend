@@ -13,7 +13,7 @@ const {
 const { 
   downloadTemplate, 
   importVehicles 
-} = require('./vehicles.import.controller');
+} = require('./bulk/vehicles.import.controller');
 
 const { authenticateToken, authorizeRole } = require('../../core/auth');
 const { uploadExcelMiddleware } = require('../../core/uploadMiddleware');

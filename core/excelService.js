@@ -76,72 +76,33 @@ class ExcelService {
       workbook.creator = 'AracKira Sistemi';
       workbook.created = new Date();
 
-      const dataSheetName = 'Veri Listeleri';
-      const dataSheet = workbook.addWorksheet(dataSheetName);
-
-      // Veri Listeleri sayfasını doldur ve isimlendirilmiş aralıklar (named ranges) oluştur
-      Object.keys(dataForLists).forEach((key, index) => {
-        const list = dataForLists[key];
-        if (!Array.isArray(list) || list.length === 0) {
-          logWarn(`[excelService] '${key}' için sağlanan veri bir dizi değil veya boş. Bu liste atlanıyor.`);
-          return;
-        }
-
-        const colLetter = String.fromCharCode(65 + index);
-        const headerCell = dataSheet.getCell(`${colLetter}1`);
-        headerCell.value = key.charAt(0).toUpperCase() + key.slice(1);
-        headerCell.font = { bold: true };
-
-        list.forEach((item, itemIndex) => {
-          dataSheet.getCell(`${colLetter}${itemIndex + 2}`).value = `${item.name} [${item.id}]`;
-        });
-
-        workbook.definedNames.add(`'${dataSheetName}'!$${colLetter}$2:$${colLetter}$${list.length + 1}`, key);
-      });
-
       // Ana veri sayfalarını oluştur
       sheetsConfig.forEach(config => {
         const worksheet = workbook.addWorksheet(config.sheetName);
-        const headerMapping = config.headerMapping;
-        const headerKeys = Object.keys(headerMapping); // Her sayfa için doğru başlık anahtarlarını burada yeniden almalıyız.
+        const headerMapping = config.headerMapping || {};
+        const headerKeys = Object.keys(headerMapping);
+        // HATA DÜZELTMESİ: 'displayName' yerine 'description' kullanıldı.
+        const headerRow = worksheet.addRow(headerKeys.map(key => headerMapping[key].description));
 
-        const headers = Object.values(headerMapping).map(h => h.description);
-        worksheet.getRow(1).values = headers;
-
-        // Örnek veri satırını ekle
-        const exampleRow = Object.values(headerMapping).map(h => h.example || ''); // example yoksa boş string
-        // Eğer en az bir örnek veri varsa satırı ekle
-        if (exampleRow.some(val => val !== '')) {
-          worksheet.addRow(exampleRow);
-        }
-
-        worksheet.columns = headerKeys.map(key => ({ 
-          header: headerMapping[key].description, 
-          key: key, 
-          width: 30 
+        worksheet.columns = headerKeys.map(key => ({
+          key: key,
+          width: headerMapping[key].width || 25
         }));
 
-        const headerRow = worksheet.getRow(1);
-        headerRow.height = 20;
-
-        // Başlık hücrelerine stil ve notları uygula
-        headerRow.eachCell((cell, colNumber) => {
+        worksheet.getRow(1).eachCell((cell, colNumber) => {
           const headerKey = headerKeys[colNumber - 1];
           const headerInfo = headerMapping[headerKey];
 
-          // Genel Stil
           cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
           cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F81BD' } };
           cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
 
           if (headerInfo) {
             const noteParts = [];
-            // Zorunlu alan stili ve notu
             if (headerInfo.required) {
-              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC00000' } }; // Kırmızı dolgu
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC00000' } };
               noteParts.push('Bu alan zorunludur.');
             }
-            // Diğer notlar
             if (headerInfo.notes) noteParts.push(`Not: ${headerInfo.notes}`);
             if (headerInfo.example) noteParts.push(`Örnek: ${headerInfo.example}`);
             if (noteParts.length > 0) {
@@ -149,26 +110,48 @@ class ExcelService {
             }
           }
         });
+      });
 
-        // Veri doğrulama kurallarını uygula
-        headerKeys.forEach((key, index) => {
-          const columnConfig = headerMapping[key];
-          if (columnConfig && columnConfig.validation && columnConfig.validation.type === 'list' && columnConfig.validation.source) {
-            const validation = columnConfig.validation;
-            const columnLetter = String.fromCharCode(65 + index);
-            worksheet.dataValidations.add(`${columnLetter}2:${columnLetter}1048576`, {
-              type: 'list',
-              allowBlank: validation.allowBlank !== false,
-              formulae: [`=${validation.source}`],
-              showErrorMessage: true,
-              errorStyle: 'warning',
-              errorTitle: 'Geçersiz Değer',
-              error: validation.error || `Lütfen '${validation.source}' listesinden geçerli bir değer seçin.`
-            });
-          }
+      // Tüm veri listeleri için tek bir yardımcı sayfa oluştur
+      const dataSheet = workbook.addWorksheet('Veri Listeleri');
+      let currentRow = 1;
+
+      Object.keys(dataForLists).forEach(key => {
+        const list = dataForLists[key];
+        if (!Array.isArray(list) || list.length === 0) {
+          logWarn(`[excelService] '${key}' için sağlanan veri bir dizi değil veya boş. Liste atlanıyor.`);
+          return;
+        }
+
+        // Başlık (örn: Markalar)
+        const friendlyName = key.replace(/([A-Z])/g, ' $1').trim();
+        const title = friendlyName.charAt(0).toUpperCase() + friendlyName.slice(1);
+        const titleRow = dataSheet.getRow(currentRow);
+        titleRow.getCell(1).value = title;
+        titleRow.font = { bold: true, size: 14 };
+        currentRow++;
+
+        // Sütun Başlıkları (ID, Değer)
+        const headerRow = dataSheet.getRow(currentRow);
+        headerRow.getCell(1).value = 'ID';
+        headerRow.getCell(2).value = 'Değer';
+        headerRow.font = { bold: true };
+        headerRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDDDDDD' } };
+        headerRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDDDDDD' } };
+        dataSheet.getColumn(1).width = 15;
+        dataSheet.getColumn(2).width = 40;
+        currentRow++;
+
+        // Veri satırları
+        list.forEach(item => {
+          const dataRow = dataSheet.getRow(currentRow);
+          dataRow.getCell(1).value = item.id;
+          dataRow.getCell(2).value = item.name;
+          currentRow++;
         });
 
-
+        // Bölümler arasına boşluk ekle
+        currentRow++;
       });
 
       const buffer = await workbook.xlsx.writeBuffer();

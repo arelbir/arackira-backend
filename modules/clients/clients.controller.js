@@ -2,18 +2,44 @@
 const clientModel = require('./clients.model');
 const addressModel = require('./client_addresses.model');
 
+const buildClientTree = (clients) => {
+  const clientMap = new Map();
+  const rootClients = [];
+
+  // First pass: add subRows to each client and map them by ID
+  clients.forEach(client => {
+    client.subRows = [];
+    clientMap.set(client.id, client);
+  });
+
+  // Second pass: link children to their parents
+  clients.forEach(client => {
+    if (client.parent_company_id && clientMap.has(client.parent_company_id)) {
+      const parent = clientMap.get(client.parent_company_id);
+      parent.subRows.push(client);
+    } else {
+      rootClients.push(client);
+    }
+  });
+
+  return rootClients;
+};
+
+
+
 // Müşteri firmaları listele
 async function getAllClients(req, res, next) {
   try {
     let clients = await clientModel.getAllClients();
-    // Eğer ?populate_addresses=true ise adresleri de getir
     if (req.query.populate_addresses === 'true') {
       clients = await Promise.all(clients.map(async client => {
         const addresses = await addressModel.getAddressesByClientId(client.id);
         return { ...client, addresses };
       }));
     }
-    res.json(clients);
+
+    const hierarchicalClients = buildClientTree(clients);
+    res.json(hierarchicalClients);
   } catch (err) {
     next(err);
   }

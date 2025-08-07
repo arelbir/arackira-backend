@@ -59,6 +59,7 @@ PUT /api/vehicles/:id/with-related
   "engine_volume_cc": 1600,
   "engine_number": "1ZZ0039608",
   "first_registration_date": "2022-01-15",
+  "last_registration_date": "2024-06-15",
   "registration_document_number": "TR12345678",
 
   "vehicle_km": 15000,

@@ -16,6 +16,8 @@ const clientValidationRules = () => [
   body('contact_person').optional().isString(),
   body('parent_company_id').optional().isInt().withMessage('Ana şirket ID sayı olmalı'),
   body('client_type_id').optional().isInt().withMessage('Müşteri tipi ID sayı olmalı'),
+  body('tax_id').optional().isString().withMessage('Vergi no metin olmalı'),
+  body('description').optional().isString().withMessage('Açıklama metin olmalı'),
   // Adresler artık ayrı endpointte, burada adres yok
 ];
 
